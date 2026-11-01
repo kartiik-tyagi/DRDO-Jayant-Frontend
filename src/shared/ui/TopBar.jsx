@@ -2,6 +2,7 @@ import { Box, Typography } from '@mui/material'
 import { ExerciseClock } from './ExerciseClock'
 import { GameStateChip } from './GameStateChip'
 import { ScenarioContext } from './ScenarioContext'
+import { StatusBadge } from './StatusBadge'
 import { UserMenu } from './UserMenu'
 
 export function TopBar({ leading, trailing, menuOpen, onMenuOpenChange, floating = false }) {
@@ -29,6 +30,7 @@ export function TopBar({ leading, trailing, menuOpen, onMenuOpenChange, floating
       </Box>
       <Box sx={{ flex: { xs: 1, lg: 0 } }} />
       {trailing}
+      <StatusBadge />
       <GameStateChip />
       <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
         <ExerciseClock />

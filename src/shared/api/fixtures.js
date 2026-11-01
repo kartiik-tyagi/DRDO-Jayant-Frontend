@@ -51,6 +51,21 @@ const sandTheme = {
 
 export const DEMO_PASSWORD = '123'
 
+const passwords = new Map()
+
+export function checkPassword(userId, password) {
+  if (!userId || !password) return false
+  return password === (passwords.get(userId) || DEMO_PASSWORD)
+}
+
+export function changePassword(userId, currentPassword, nextPassword) {
+  if (!checkPassword(userId, currentPassword)) return 'CURRENT'
+  if (!nextPassword || nextPassword.length < 3) return 'SHORT'
+  if (nextPassword === (passwords.get(userId) || DEMO_PASSWORD)) return 'SAME'
+  passwords.set(userId, nextPassword)
+  return 'OK'
+}
+
 export const themes = [fieldTheme, nightTheme, sandTheme]
 
 export const exerciseTheme = {
@@ -113,6 +128,7 @@ function navigation(includeControl) {
 
 const grants = {
   apex: {
+    admin: true,
     canSelectScenario: true,
     canControlGame: true,
     filterIds: ['countries', 'places', 'coast', 'boundaries', 'disputed'],
@@ -152,6 +168,53 @@ const grants = {
     resourceIds: ['fuel', 'shipping'],
     planIds: ['maritime-plan'],
   },
+}
+
+export function accessFor(userId) {
+  const user = users.find((item) => item.id === userId)
+  if (!user) return null
+  const grant = grants[user.grant] || grants.theatre
+  return {
+    userId: user.id,
+    admin: Boolean(grant.admin),
+    canControlGame: Boolean(grant.canControlGame),
+    canSelectScenario: Boolean(grant.canSelectScenario),
+  }
+}
+
+export function listDirectoryUsers() {
+  return users.map(({ id, title, role, service, avatarUrl }) => ({ id, title, role, service, avatarUrl }))
+}
+
+export function addDirectoryUser(user) {
+  if (!user?.id || users.some((item) => item.id === user.id)) return false
+  users.push({
+    id: user.id,
+    title: user.title,
+    role: user.role,
+    service: user.service,
+    avatarUrl: '/avatars/corps.svg',
+    themeId: 'field',
+    grant: 'theatre',
+  })
+  return true
+}
+
+export function updateDirectoryUser(id, patch) {
+  const user = users.find((item) => item.id === id)
+  if (!user || id === 'apex') return false
+  if (patch.title) user.title = patch.title
+  if (patch.role) user.role = patch.role
+  if (patch.service) user.service = patch.service
+  return true
+}
+
+export function removeDirectoryUser(id) {
+  if (id === 'apex') return 'PROTECTED'
+  const index = users.findIndex((item) => item.id === id)
+  if (index < 0) return 'MISSING'
+  users.splice(index, 1)
+  return 'OK'
 }
 
 const users = [
@@ -302,5 +365,6 @@ export function sessionFor(userId) {
     clockStart,
     exerciseTitle: exerciseMeta.exerciseTitle,
     classification: exerciseMeta.classification,
+    demoMode: true,
   }
 }

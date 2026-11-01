@@ -7,7 +7,7 @@ import { useChrome } from '../features/session/useChrome'
 import { useSessionStore } from '../features/session/useSessionStore'
 import { ContextStrip, TopBar } from '../shared/ui/TopBar'
 import { IconStrip } from '../shared/ui/IconStrip'
-import { MapStage } from '../shared/ui/MapStage'
+import { PictureWorkspace } from '../shared/ui/PictureWorkspace'
 import { ToolPanel } from '../shared/ui/ToolPanel'
 
 function Picture() {
@@ -48,7 +48,7 @@ function Picture() {
       />
       {isNarrow ? menus('top') : null}
       <ContextStrip />
-      <MapStage />
+      <PictureWorkspace variant="plain" />
       <Popover
         open={Boolean(chrome.panel && anchor)}
         anchorEl={anchor}
