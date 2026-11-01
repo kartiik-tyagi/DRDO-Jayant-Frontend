@@ -1,37 +1,26 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect } from 'react'
 import { Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
-import {
-  AppBar,
-  BottomNavigation,
-  BottomNavigationAction,
-  Box,
-  Button,
-  Chip,
-  Drawer,
-  IconButton,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Toolbar,
-  Tooltip,
-  Typography,
-  useMediaQuery,
-} from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import { AppBar, Box, Button, Chip, Paper, Stack, Toolbar, Tooltip, Typography, IconButton } from '@mui/material'
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
 import LoginPage from '../features/login/LoginPage'
-import CommandView from '../features/command/CommandView'
-import ControlView from '../features/control/ControlView'
 import PlansView from '../features/plans/PlansView'
 import SituationView from '../features/situation/SituationView'
 import { useSessionStore } from '../features/session/useSessionStore'
-import { DutyIcon } from '../shared/ui/DutyIcon'
+import { flatten } from '../shared/lib/tree'
+import { ApexTransport } from '../shared/ui/ApexTransport'
+import { CommandTree } from '../shared/ui/CommandTree'
+import { EmptyState } from '../shared/ui/EmptyState'
 import { ExerciseClock } from '../shared/ui/ExerciseClock'
 import { GameStateChip } from '../shared/ui/GameStateChip'
 import { Inspector } from '../shared/ui/Inspector'
-import { dutiesFor } from './duties'
+import { PositionBadge } from '../shared/ui/PositionBadge'
 import { LAYOUT_ID, LAYOUT_NAME } from './meta'
+
+const LINKS = [
+  { label: 'Desk', path: '/desk' },
+  { label: 'Situation', path: '/situation' },
+  { label: 'Plans', path: '/plans' },
+]
 
 function RequireSession() {
   const session = useSessionStore((state) => state.session)
@@ -45,161 +34,174 @@ function GuestOnly() {
   return <LoginPage />
 }
 
-function WorkstationFrame() {
-  const theme = useTheme()
-  const isPhone = useMediaQuery(theme.breakpoints.down('sm'))
-  const isCompact = useMediaQuery(theme.breakpoints.down('md'))
-  const isWide = useMediaQuery(theme.breakpoints.up('xl'))
-  const navigate = useNavigate()
+function DeskFrame() {
   const location = useLocation()
+  const navigate = useNavigate()
   const session = useSessionStore((state) => state.session)
-  const selectedId = useSessionStore((state) => state.selectedId)
   const signOut = useSessionStore((state) => state.signOut)
-  const [detailsOpen, setDetailsOpen] = useState(false)
-  const skipDetails = useRef(true)
-  const items = dutiesFor(session?.position)
-  const drawerWidth = isWide ? 300 : 248
-  const inspectorWidth = isWide ? 380 : 320
   const fullBleed = location.pathname === '/situation'
-  const current = items.find((item) => item.path === location.pathname)?.path || false
 
   useEffect(() => {
-    if (skipDetails.current) {
-      skipDetails.current = false
-      return
-    }
-    if (selectedId && isCompact) setDetailsOpen(true)
-  }, [selectedId, isCompact])
+    document.title = `Layout ${LAYOUT_ID} · ${LAYOUT_NAME}`
+  }, [])
 
   return (
-    <Box sx={{ display: 'flex', height: '100%', minHeight: 0, pb: isPhone ? '72px' : 0 }}>
-      {isPhone ? null : (
-        <Drawer
-          variant="permanent"
-          sx={{
-            width: drawerWidth,
-            flexShrink: 0,
-            '& .MuiDrawer-paper': {
-              width: drawerWidth,
-              boxSizing: 'border-box',
-              borderRight: '1px solid',
-              borderColor: 'divider',
-            },
-          }}
-        >
-          <Toolbar sx={{ alignItems: 'flex-start', py: 1.5 }}>
-            <Box sx={{ minWidth: 0 }}>
-              <Typography variant="overline" color="secondary">
-                Jayant
-              </Typography>
-              <Typography variant="subtitle2" noWrap>
-                Layout {LAYOUT_ID}
-              </Typography>
-              <Typography variant="caption" color="text.secondary" noWrap>
-                {LAYOUT_NAME}
-              </Typography>
-            </Box>
-          </Toolbar>
-          <List component="nav" aria-label="Duties" sx={{ px: 1 }}>
-            {items.map((item) => (
-              <ListItemButton
-                key={item.id}
-                selected={location.pathname === item.path}
-                onClick={() => navigate(item.path)}
-                sx={{ borderRadius: 1, mb: 0.5 }}
-              >
-                <ListItemIcon sx={{ minWidth: 40, color: location.pathname === item.path ? 'secondary.main' : 'inherit' }}>
-                  <DutyIcon name={item.id} />
-                </ListItemIcon>
-                <ListItemText primary={item.label} />
-              </ListItemButton>
-            ))}
-          </List>
-        </Drawer>
-      )}
-
-      <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, minHeight: 0 }}>
-        <AppBar position="static" elevation={0} color="primary">
-          <Toolbar sx={{ gap: 1.5, flexWrap: 'wrap', py: 1 }}>
-            <Chip label={`Layout ${LAYOUT_ID}`} size="small" color="secondary" />
-            <Box sx={{ flex: 1, minWidth: 160 }}>
-              <Typography variant="subtitle1" noWrap>
-                {session.position.title}
-              </Typography>
-              <Typography variant="caption" sx={{ display: { xs: 'none', sm: 'block' }, opacity: 0.85 }} noWrap>
-                {session.scenarioName} · {session.gameName}
-              </Typography>
-            </Box>
-            {isCompact ? (
-              <Button color="inherit" onClick={() => setDetailsOpen(true)}>
-                Details
-              </Button>
-            ) : null}
-            <GameStateChip />
-            <ExerciseClock />
-            <Tooltip title="Sign out">
-              <IconButton color="inherit" aria-label="Sign out" onClick={() => { signOut(); navigate('/login') }}>
-                <LogoutOutlinedIcon />
-              </IconButton>
-            </Tooltip>
-          </Toolbar>
-        </AppBar>
-
-        <Box sx={{ display: 'flex', flex: 1, minHeight: 0 }}>
-          <Box
-            component="main"
-            sx={{
-              flex: 1,
-              minWidth: 0,
-              minHeight: 0,
-              overflow: fullBleed ? 'hidden' : 'auto',
-              p: fullBleed ? 0 : { xs: 1.5, sm: 2 },
-            }}
-          >
-            <Outlet />
+    <Box sx={{ height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <AppBar position="static" elevation={0} color="primary">
+        <Toolbar sx={{ gap: 1.5, flexWrap: 'wrap', py: 1 }}>
+          <Chip label={`Layout ${LAYOUT_ID}`} size="small" color="secondary" />
+          <Box sx={{ flex: 1, minWidth: 160 }}>
+            <Typography variant="subtitle1" noWrap>
+              {LAYOUT_NAME}
+            </Typography>
+            <Typography variant="caption" sx={{ opacity: 0.85 }} noWrap>
+              {session.scenarioName} · {session.gameName}
+            </Typography>
           </Box>
-          {isCompact ? null : (
-            <Box
-              sx={{
-                width: inspectorWidth,
-                flexShrink: 0,
-                borderLeft: '1px solid',
-                borderColor: 'divider',
-                overflow: 'auto',
-                bgcolor: 'background.paper',
+          <GameStateChip />
+          <ExerciseClock />
+          <Tooltip title="Sign out">
+            <IconButton
+              color="inherit"
+              aria-label="Sign out"
+              onClick={() => {
+                signOut()
+                navigate('/login')
               }}
             >
-              <Inspector />
-            </Box>
-          )}
-        </Box>
+              <LogoutOutlinedIcon />
+            </IconButton>
+          </Tooltip>
+        </Toolbar>
+        <Stack direction="row" spacing={1} sx={{ px: 2, pb: 1.25, overflow: 'auto' }}>
+          {LINKS.map((link) => (
+            <Button
+              key={link.path}
+              color="inherit"
+              variant={location.pathname === link.path ? 'outlined' : 'text'}
+              onClick={() => navigate(link.path)}
+            >
+              {link.label}
+            </Button>
+          ))}
+        </Stack>
+      </AppBar>
+      <Box
+        component="main"
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          overflow: fullBleed ? 'hidden' : 'auto',
+          p: fullBleed ? 0 : { xs: 1.5, sm: 2 },
+        }}
+      >
+        <Outlet />
       </Box>
+    </Box>
+  )
+}
 
-      {isPhone ? (
+function AppointmentCard({ node, selected, onSelect }) {
+  return (
+    <Paper
+      component="button"
+      type="button"
+      onClick={() => onSelect(node.id)}
+      sx={{
+        textAlign: 'left',
+        p: 2,
+        width: '100%',
+        color: 'inherit',
+        font: 'inherit',
+        cursor: 'pointer',
+        border: '1px solid',
+        borderColor: selected ? 'secondary.main' : 'divider',
+      }}
+    >
+      <Typography variant="h6">{node.title}</Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+        {node.service}
+      </Typography>
+      <Chip label="Appointment" size="small" color="primary" sx={{ mt: 1.5 }} />
+    </Paper>
+  )
+}
+
+function DeskPage() {
+  const session = useSessionStore((state) => state.session)
+  const selectedId = useSessionStore((state) => state.selectedId)
+  const select = useSessionStore((state) => state.select)
+  const isApex = session?.position?.id === 'apex'
+  const root = session?.commandTree
+  const appointments = (root?.children || []).filter((node) => node.kind === 'appointment')
+  const assets = flatten(root).filter((node) => node.kind === 'asset')
+
+  if (isApex) {
+    return (
+      <Stack spacing={2}>
+        <PositionBadge position={session.position} />
+        <Typography variant="h5">Exercise control</Typography>
+        <Typography variant="body2" color="text.secondary">
+          {session.playingNote}
+        </Typography>
+        <GameStateChip />
+        <ApexTransport />
+        <CommandTree root={root} selectedId={selectedId} onSelect={select} />
+        <Inspector />
+      </Stack>
+    )
+  }
+
+  return (
+    <Stack spacing={2}>
+      <PositionBadge position={session.position} parentTitle={session.position.parentTitle} />
+      <Typography variant="body2" color="text.secondary">
+        {session.playingNote}
+      </Typography>
+      <Typography variant="h6">Below this appointment</Typography>
+      {appointments.length === 0 ? (
+        <EmptyState title="No subordinate appointments" message="This playing slice ends at this chair." />
+      ) : (
         <Box
-          component="nav"
-          aria-label="Duties"
-          sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 10, bgcolor: 'background.paper', borderTop: '1px solid', borderColor: 'divider' }}
+          sx={{
+            display: 'grid',
+            gap: 2,
+            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', xl: 'repeat(3, 1fr)' },
+          }}
         >
-          <BottomNavigation showLabels value={current} onChange={(_, value) => navigate(value)}>
-            {items.map((item) => (
-              <BottomNavigationAction key={item.id} label={item.label} value={item.path} icon={<DutyIcon name={item.id} />} />
+          {appointments.map((node) => (
+            <AppointmentCard
+              key={node.id}
+              node={node}
+              selected={node.id === selectedId}
+              onSelect={select}
+            />
+          ))}
+        </Box>
+      )}
+      {assets.length > 0 ? (
+        <Box>
+          <Typography variant="overline" color="text.secondary">
+            Assets held here
+          </Typography>
+          <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap', mt: 1 }}>
+            {assets.map((asset) => (
+              <Button
+                key={asset.id}
+                variant={asset.id === selectedId ? 'contained' : 'outlined'}
+                color="inherit"
+                onClick={() => select(asset.id)}
+              >
+                {asset.title}
+              </Button>
             ))}
-          </BottomNavigation>
+          </Stack>
         </Box>
       ) : null}
-
-      {isCompact ? (
-        <Drawer
-          anchor="bottom"
-          open={detailsOpen}
-          onClose={() => setDetailsOpen(false)}
-          sx={{ '& .MuiDrawer-paper': { maxHeight: '70vh' } }}
-        >
-          <Inspector />
-        </Drawer>
-      ) : null}
-    </Box>
+      <Paper variant="outlined">
+        <Inspector />
+      </Paper>
+    </Stack>
   )
 }
 
@@ -212,12 +214,11 @@ export default function Shell() {
     <Routes>
       <Route path="/login" element={<GuestOnly />} />
       <Route element={<RequireSession />}>
-        <Route element={<WorkstationFrame />}>
-          <Route index element={<Navigate to="/situation" replace />} />
+        <Route element={<DeskFrame />}>
+          <Route index element={<Navigate to="/desk" replace />} />
+          <Route path="desk" element={<DeskPage />} />
           <Route path="situation" element={<SituationView />} />
-          <Route path="command" element={<CommandView />} />
           <Route path="plans" element={<PlansView />} />
-          <Route path="control" element={<ControlView />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
