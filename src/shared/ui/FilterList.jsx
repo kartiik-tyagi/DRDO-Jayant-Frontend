@@ -1,4 +1,4 @@
-import { Box, Button, Chip, Stack, Typography } from '@mui/material'
+import { Box, List, ListItemButton, ListItemText, Typography } from '@mui/material'
 import { useSessionStore } from '../../features/session/useSessionStore'
 
 function summary(filters, visible) {
@@ -6,7 +6,7 @@ function summary(filters, visible) {
   return labels.length ? labels.join(', ') : 'None'
 }
 
-export function FilterList({ variant = 'list' }) {
+export function FilterList() {
   const filters = useSessionStore((state) => state.session?.filters || [])
   const setFilter = useSessionStore((state) => state.setFilter)
   const groups = []
@@ -17,54 +17,43 @@ export function FilterList({ variant = 'list' }) {
   }
 
   return (
-    <Stack spacing={1.5}>
-      <Stack spacing={0.25}>
-        <Typography variant="overline">Map filters</Typography>
-        <Typography variant="caption" color="text.secondary">
-          Released to this role.
-        </Typography>
-        <Typography variant="caption">Shown: {summary(filters, true)}</Typography>
-        <Typography variant="caption">Not shown: {summary(filters, false)}</Typography>
-      </Stack>
-      {variant === 'chips' ? (
-        <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
-          {filters.map((filter) => (
-            <Chip
-              key={filter.id}
-              label={filter.label}
-              clickable
-              color={filter.visible ? 'primary' : 'default'}
-              variant={filter.visible ? 'filled' : 'outlined'}
-              aria-pressed={filter.visible}
-              onClick={() => setFilter(filter.id, !filter.visible)}
-              sx={{ minHeight: 36 }}
-            />
-          ))}
-        </Stack>
-      ) : (
-        groups.map((group) => (
-          <Box key={group.name}>
-            <Typography variant="caption" color="text.secondary">
-              {group.name}
-            </Typography>
+    <Box>
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+        Released to this role.
+      </Typography>
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+        Shown: {summary(filters, true)}
+      </Typography>
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+        Not shown: {summary(filters, false)}
+      </Typography>
+      {groups.map((group) => (
+        <Box key={group.name} sx={{ mb: 1 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ px: 1 }}>
+            {group.name}
+          </Typography>
+          <List disablePadding>
             {group.filters.map((filter) => (
-              <Button
+              <ListItemButton
                 key={filter.id}
-                fullWidth
-                variant={filter.visible ? 'contained' : 'outlined'}
+                selected={filter.visible}
                 aria-pressed={filter.visible}
                 onClick={() => setFilter(filter.id, !filter.visible)}
-                sx={{ justifyContent: 'space-between', mb: 0.75 }}
+                sx={{
+                  borderRadius: 1,
+                  minHeight: 40,
+                  '&.Mui-selected': { bgcolor: 'action.selected' },
+                }}
               >
-                {filter.label}
-                <Typography variant="caption" component="span" sx={{ color: 'inherit' }}>
-                  {filter.visible ? 'Shown' : 'Not shown'}
+                <ListItemText primary={filter.label} slotProps={{ primary: { variant: 'body2', color: 'text.primary' } }} />
+                <Typography variant="caption" color={filter.visible ? 'primary.main' : 'text.secondary'}>
+                  {filter.visible ? 'On' : 'Off'}
                 </Typography>
-              </Button>
+              </ListItemButton>
             ))}
-          </Box>
-        ))
-      )}
-    </Stack>
+          </List>
+        </Box>
+      ))}
+    </Box>
   )
 }

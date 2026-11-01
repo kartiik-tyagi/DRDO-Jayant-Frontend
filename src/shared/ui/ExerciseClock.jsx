@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Box, Typography } from '@mui/material'
+import { Tooltip, Typography } from '@mui/material'
 import dayjs from 'dayjs'
 import { useSessionStore } from '../../features/session/useSessionStore'
 
@@ -14,14 +14,14 @@ export function ExerciseClock() {
     return () => window.clearInterval(timer)
   }, [status, tick])
 
+  const full = dayjs(epochMs).format('DD MMM YYYY HH:mm:ss')
+  const short = dayjs(epochMs).format('DD MMM HH:mm:ss')
+
   return (
-    <Box sx={{ textAlign: { xs: 'left', sm: 'right' }, flexShrink: 0 }}>
-      <Typography variant="caption" display="block">
-        Exercise time
+    <Tooltip title={`Exercise time ${full}`}>
+      <Typography variant="body2" sx={{ fontVariantNumeric: 'tabular-nums', color: 'text.primary', whiteSpace: 'nowrap' }}>
+        {short}
       </Typography>
-      <Typography variant="body2">
-        {dayjs(epochMs).format('DD MMM YYYY HH:mm:ss')}
-      </Typography>
-    </Box>
+    </Tooltip>
   )
 }
