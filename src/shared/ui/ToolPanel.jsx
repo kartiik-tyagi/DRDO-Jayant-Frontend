@@ -1,46 +1,30 @@
-import { Box, Divider, IconButton, Stack, Typography } from '@mui/material'
+import { Box, Divider, IconButton, Typography } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
-import { useSessionStore } from '../../features/session/useSessionStore'
-import { ExerciseControls } from './ExerciseControls'
-import { FilterList } from './FilterList'
+import { PanelBody } from './workbench/Panels'
 
 const TITLES = {
   filters: 'Map filters',
   resources: 'Resources',
   plans: 'Plans',
   'exercise-control': 'Exercise control',
-}
-
-function RecordList({ items, empty }) {
-  if (!items.length) {
-    return (
-      <Typography variant="body2" color="text.secondary">
-        {empty}
-      </Typography>
-    )
-  }
-  return (
-    <Stack divider={<Divider flexItem />}>
-      {items.map((item) => (
-        <Box key={item.id} sx={{ py: 1 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, alignItems: 'baseline' }}>
-            <Typography variant="body2">{item.name}</Typography>
-            <Typography variant="caption" color="text.secondary">
-              {item.status}
-            </Typography>
-          </Box>
-          <Typography variant="caption" color="text.secondary">
-            {item.detail}
-          </Typography>
-        </Box>
-      ))}
-    </Stack>
-  )
+  features: 'Features',
+  properties: 'Properties',
+  draw: 'Draw and measure',
+  teams: 'Teams',
+  'map-settings': 'Map settings',
+  planning: 'Planning board',
+  alerts: 'Alerts',
+  sessions: 'Sessions',
+  'scenario-play': 'Scenario playback',
+  simulation: 'Simulation',
+  stream: 'Live stream',
+  zones: 'Zones',
+  routes: 'Routes',
+  directory: 'Users and teams',
+  flags: 'Features',
 }
 
 export function ToolPanel({ panel, onClose }) {
-  const resources = useSessionStore((state) => state.session?.resources || [])
-  const plans = useSessionStore((state) => state.session?.plans || [])
   if (!panel) return null
 
   return (
@@ -65,10 +49,7 @@ export function ToolPanel({ panel, onClose }) {
       </Box>
       <Divider />
       <Box sx={{ overflow: 'auto', px: 1.5, py: 1.25, flex: 1 }}>
-        {panel === 'filters' ? <FilterList /> : null}
-        {panel === 'resources' ? <RecordList items={resources} empty="No resources are released to this role." /> : null}
-        {panel === 'plans' ? <RecordList items={plans} empty="No plans are released to this role." /> : null}
-        {panel === 'exercise-control' ? <ExerciseControls /> : null}
+        <PanelBody panel={panel} />
       </Box>
     </Box>
   )

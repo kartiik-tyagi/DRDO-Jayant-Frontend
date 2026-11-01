@@ -1,9 +1,9 @@
 import { Box, IconButton, Tooltip } from '@mui/material'
-import { useSessionStore } from '../../features/session/useSessionStore'
+import { useNavigation } from '../../features/directory/useNavigation'
 import { NavIcon } from './navIcons'
 
 export function IconStrip({ activeId, onSelect, edge = 'bottom' }) {
-  const groups = useSessionStore((state) => state.session?.navigation || [])
+  const groups = useNavigation()
   return (
     <Box
       sx={{

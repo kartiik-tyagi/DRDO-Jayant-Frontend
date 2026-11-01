@@ -29,22 +29,24 @@ function createTileLayer(serviceUrl, filter) {
   return layer
 }
 
-export default function SituationMap({ view, serviceUrl, layers, resetToken, onPointer, onZoom }) {
+export default function SituationMap({ view, serviceUrl, layers, resetToken, onPointer, onZoom, onMap }) {
   const targetRef = useRef(null)
   const mapRef = useRef(null)
   const viewRef = useRef(view)
   const layersRef = useRef(layers)
   const onPointerRef = useRef(onPointer)
   const onZoomRef = useRef(onZoom)
+  const onMapRef = useRef(onMap)
   const skipReset = useRef(true)
   viewRef.current = view
   layersRef.current = layers
   const layerKey = (layers || []).map((layer) => layer.id).join('|')
-  const visibilityKey = (layers || []).map((layer) => `${layer.id}:${layer.visible ? 1 : 0}`).join('|')
+  const visibilityKey = (layers || []).map((layer) => `${layer.id}:${layer.visible ? 1 : 0}:${layer.opacity ?? 1}`).join('|')
 
   useEffect(() => {
     onPointerRef.current = onPointer
     onZoomRef.current = onZoom
+    onMapRef.current = onMap
   })
 
   useEffect(() => {
@@ -62,6 +64,7 @@ export default function SituationMap({ view, serviceUrl, layers, resetToken, onP
       }),
     })
     mapRef.current = map
+    onMapRef.current?.(map)
     for (const filter of items) {
       const layer = createTileLayer(serviceUrl, filter)
       if (layer) map.addLayer(layer)
@@ -85,6 +88,7 @@ export default function SituationMap({ view, serviceUrl, layers, resetToken, onP
 
     return () => {
       observer.disconnect()
+      onMapRef.current?.(null)
       map.setTarget(null)
       mapRef.current = null
     }
@@ -98,7 +102,10 @@ export default function SituationMap({ view, serviceUrl, layers, resetToken, onP
       const id = layer.get('filterId')
       if (!id) return
       const match = current.find((item) => item.id === id)
-      if (match) layer.setVisible(Boolean(match.visible))
+      if (match) {
+        layer.setVisible(Boolean(match.visible))
+        layer.setOpacity(match.opacity ?? 1)
+      }
     })
   }, [visibilityKey])
 

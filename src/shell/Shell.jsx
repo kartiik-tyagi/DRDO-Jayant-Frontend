@@ -8,11 +8,12 @@ import { useSessionStore } from '../features/session/useSessionStore'
 import { ContextStrip, TopBar } from '../shared/ui/TopBar'
 import { IconRail } from '../shared/ui/IconRail'
 import { IconStrip } from '../shared/ui/IconStrip'
-import { MapStage } from '../shared/ui/MapStage'
+import { EMPTY_LIST } from '../shared/lib/empty'
+import { PictureWorkspace } from '../shared/ui/PictureWorkspace'
 import { ToolPanel } from '../shared/ui/ToolPanel'
 
 function PhaseSwitch() {
-  const phases = useSessionStore((state) => state.session?.phases || [])
+  const phases = useSessionStore((state) => state.session?.phases ?? EMPTY_LIST)
   const phaseId = useSessionStore((state) => state.phaseId)
   const applyPhase = useSessionStore((state) => state.applyPhase)
   return (
@@ -72,7 +73,7 @@ function Picture() {
         </Box>
       ) : null}
       <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
-        <MapStage />
+        <PictureWorkspace variant="phase" />
         {!isPhone && chrome.panel ? (
           <Box sx={{ width: 300, flexShrink: 0, borderLeft: 1, borderColor: 'divider', minHeight: 0 }}>
             <ToolPanel panel={chrome.panel} onClose={chrome.closePanel} />
