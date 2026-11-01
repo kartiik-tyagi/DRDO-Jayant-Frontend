@@ -4,7 +4,7 @@ import { useSessionStore } from '../../features/session/useSessionStore'
 function Fact({ label, children }) {
   return (
     <Box sx={{ minWidth: 0 }}>
-      <Typography variant="caption" color="text.secondary" display="block" noWrap>
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.2 }}>
         {label}
       </Typography>
       {children}
@@ -27,13 +27,14 @@ export function ScenarioContext() {
           <TextField
             select
             size="small"
+            hiddenLabel
             value={session.selectedScenarioId}
             onChange={(event) => setScenario(event.target.value)}
             aria-label="Selected scenario"
-            sx={{ minWidth: 200, '& .MuiInputBase-root': { minHeight: 44 } }}
+            sx={{ minWidth: 168, '& .MuiInputBase-root': { minHeight: 36 }, '& .MuiSelect-select': { py: 0.75 } }}
           >
             {session.scenarios.map((item) => (
-              <MenuItem key={item.id} value={item.id} sx={{ minHeight: 44 }}>
+              <MenuItem key={item.id} value={item.id} sx={{ minHeight: 40 }}>
                 {item.name}
               </MenuItem>
             ))}
@@ -55,7 +56,7 @@ export function ScenarioContext() {
         </Typography>
       </Fact>
       {mismatch ? (
-        <Typography variant="caption" color="warning.main">
+        <Typography variant="caption" color="text.secondary">
           Selected scenario is not the active scenario.
         </Typography>
       ) : null}
