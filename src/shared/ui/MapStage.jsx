@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Box, Typography } from '@mui/material'
+import { MapWorkbench } from '../../components/MapWorkbench'
 import SituationMap from '../../components/SituationMap'
+import { useDirectoryStore } from '../../features/directory/useDirectoryStore'
 import { useSessionStore } from '../../features/session/useSessionStore'
 
 function formatCoordinate(value) {
@@ -10,9 +12,17 @@ function formatCoordinate(value) {
 export function MapStage({ readout = 'bar' }) {
   const session = useSessionStore((state) => state.session)
   const resetToken = useSessionStore((state) => state.resetToken)
+  const directory = useDirectoryStore((state) => state.data)
+  const measure = useDirectoryStore((state) => state.measure)
   const [pointer, setPointer] = useState(null)
   const [zoom, setZoom] = useState(session?.mapView?.zoom ?? null)
+  const [map, setMap] = useState(null)
   if (!session) return null
+  const layers = session.filters.map((filter) => ({
+    ...filter,
+    opacity: directory?.opacity?.[filter.id] ?? 1,
+    visible: directory?.settings?.source === 'osm' && filter.base ? false : filter.visible,
+  }))
 
   const coordinates = pointer
     ? `${formatCoordinate(pointer.latitude)}° N, ${formatCoordinate(pointer.longitude)}° E`
@@ -46,12 +56,19 @@ export function MapStage({ readout = 'bar' }) {
       <Box sx={{ flex: 1, minHeight: 0, position: 'relative' }}>
         <SituationMap
           view={session.mapView}
-          serviceUrl={session.mapService}
-          layers={session.filters}
+          serviceUrl={directory?.settings?.source === 'wms' && directory.settings.geoserverUrl ? directory.settings.geoserverUrl : session.mapService}
+          layers={layers}
           resetToken={resetToken}
           onPointer={setPointer}
           onZoom={setZoom}
+          onMap={setMap}
         />
+        <MapWorkbench map={map} />
+        {measure ? (
+          <Box sx={{ position: 'absolute', top: 12, left: 12, zIndex: 2, px: 1, py: 0.5, bgcolor: 'background.paper', border: 1, borderColor: 'divider' }}>
+            <Typography variant="caption">{measure}</Typography>
+          </Box>
+        ) : null}
         {readout === 'overlay' ? (
           <Box
             sx={{

@@ -1,5 +1,8 @@
-import { Box, List, ListItemButton, ListItemText, Typography } from '@mui/material'
+import { Box, List, ListItemButton, ListItemText, Slider, Typography } from '@mui/material'
+import { useCommit, useDirectoryStore } from '../../features/directory/useDirectoryStore'
 import { useSessionStore } from '../../features/session/useSessionStore'
+import * as api from '../../shared/api/client'
+import { EMPTY_LIST, EMPTY_OBJECT } from '../lib/empty'
 
 function summary(filters, visible) {
   const labels = filters.filter((filter) => filter.visible === visible).map((filter) => filter.label)
@@ -7,8 +10,11 @@ function summary(filters, visible) {
 }
 
 export function FilterList() {
-  const filters = useSessionStore((state) => state.session?.filters || [])
+  const filters = useSessionStore((state) => state.session?.filters ?? EMPTY_LIST)
   const setFilter = useSessionStore((state) => state.setFilter)
+  const opacity = useDirectoryStore((state) => state.data?.opacity ?? EMPTY_OBJECT)
+  const opacityEnabled = useDirectoryStore((state) => state.data?.flags?.layerOpacity !== false)
+  const commit = useCommit()
   const groups = []
   for (const filter of filters) {
     const group = groups.find((item) => item.name === filter.group)
@@ -34,8 +40,8 @@ export function FilterList() {
           </Typography>
           <List disablePadding>
             {group.filters.map((filter) => (
+              <Box key={filter.id}>
               <ListItemButton
-                key={filter.id}
                 selected={filter.visible}
                 aria-pressed={filter.visible}
                 onClick={() => setFilter(filter.id, !filter.visible)}
@@ -50,6 +56,19 @@ export function FilterList() {
                   {filter.visible ? 'On' : 'Off'}
                 </Typography>
               </ListItemButton>
+              {opacityEnabled ? (
+                <Slider
+                  size="small"
+                  min={0.15}
+                  max={1}
+                  step={0.05}
+                  value={opacity[filter.id] ?? 1}
+                  aria-label={`${filter.label} opacity`}
+                  onChangeCommitted={(_, value) => commit((userId) => api.setLayerOpacity(userId, filter.id, value))}
+                  sx={{ mx: 1.5, width: 'auto' }}
+                />
+              ) : null}
+              </Box>
             ))}
           </List>
         </Box>

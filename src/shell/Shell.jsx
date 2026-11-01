@@ -8,7 +8,7 @@ import { useSessionStore } from '../features/session/useSessionStore'
 import { ContextStrip, TopBar } from '../shared/ui/TopBar'
 import { IconRail } from '../shared/ui/IconRail'
 import { IconStrip } from '../shared/ui/IconStrip'
-import { MapStage } from '../shared/ui/MapStage'
+import { PictureWorkspace } from '../shared/ui/PictureWorkspace'
 import { ToolPanel } from '../shared/ui/ToolPanel'
 
 function Picture() {
@@ -22,7 +22,7 @@ function Picture() {
       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         <TopBar menuOpen={chrome.menuOpen} onMenuOpenChange={chrome.setMenuOpen} />
         <ContextStrip />
-        <MapStage readout="overlay" />
+        <PictureWorkspace variant="overlay" />
         <IconStrip activeId={chrome.panel} onSelect={chrome.select} />
         <Drawer anchor="bottom" open={Boolean(chrome.panel)} onClose={chrome.closePanel}>
           <ToolPanel panel={chrome.panel} onClose={chrome.closePanel} />
@@ -33,7 +33,7 @@ function Picture() {
 
   return (
     <Box sx={{ height: '100%', position: 'relative', display: 'flex', flexDirection: 'column' }}>
-      <MapStage readout="overlay" />
+      <PictureWorkspace variant="overlay" />
       <Box sx={{ position: 'absolute', zIndex: 2, top: 8, left: 8, right: 8 }}>
         <Paper elevation={4} sx={{ bgcolor: surface }}>
           <TopBar floating menuOpen={chrome.menuOpen} onMenuOpenChange={chrome.setMenuOpen} />

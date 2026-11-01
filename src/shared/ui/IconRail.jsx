@@ -1,11 +1,11 @@
 import { Box, Divider, IconButton, ListItemButton, ListItemIcon, ListItemText, Tooltip, Typography } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
-import { useSessionStore } from '../../features/session/useSessionStore'
+import { useNavigation } from '../../features/directory/useNavigation'
 import { NavIcon } from './navIcons'
 
 export function IconRail({ expanded, onToggle, activeId, onSelect, edge = 'start', fill = true }) {
-  const groups = useSessionStore((state) => state.session?.navigation || [])
+  const groups = useNavigation()
   const width = expanded ? 220 : 56
 
   return (

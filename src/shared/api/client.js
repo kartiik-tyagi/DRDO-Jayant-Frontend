@@ -1,17 +1,12 @@
 import { z } from 'zod'
 import { logger } from '../lib/logger'
 import { readExerciseChoice, writeExerciseChoice } from '../lib/sessionKey'
-import { DEMO_PASSWORD, activateGame, activateScenario, adoptExercise, exerciseChoice, loginContext, sessionFor } from './fixtures'
+import { ApiError } from './errors'
+import { activateGame, activateScenario, adoptExercise, checkPassword, exerciseChoice, loginContext, sessionFor } from './fixtures'
+
+export { ApiError } from './errors'
 
 const wait = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms))
-
-export class ApiError extends Error {
-  constructor(message, code) {
-    super(message)
-    this.name = 'ApiError'
-    this.code = code
-  }
-}
 
 const themeSchema = z.object({
   mode: z.enum(['dark', 'light']),
@@ -102,6 +97,7 @@ const sessionSchema = z.object({
   clockStart: z.string(),
   exerciseTitle: z.string(),
   classification: z.string(),
+  demoMode: z.boolean(),
 })
 
 let exerciseHydrated = false
@@ -149,7 +145,7 @@ export async function login({ userId, password }) {
   try {
     await wait(220)
     if (!password) throw new ApiError('Enter the access password.', 'VALIDATION')
-    if (password !== DEMO_PASSWORD) throw new ApiError('Access refused.', 'VALIDATION')
+    if (!checkPassword(userId, password)) throw new ApiError('Access refused.', 'VALIDATION')
     if (!userId) throw new ApiError('Select a user.', 'VALIDATION')
     return sessionFromDirectory(userId)
   } catch (error) {
@@ -208,3 +204,54 @@ export async function changeGame({ userId, gameId }) {
     throw error
   }
 }
+
+export {
+  addComment,
+  closeReplay,
+  connectStream,
+  createFeature,
+  createGraphic,
+  deleteCatalogue,
+  deleteFeature,
+  deleteGraphic,
+  deleteRecording,
+  deleteRole,
+  deleteTeam,
+  deleteUser,
+  discardRecording,
+  disconnectStream,
+  exportPlan,
+  extendFeature,
+  loadReplay,
+  loadWorkbench,
+  promoteGraphic,
+  redoPlanning,
+  resetMapViews,
+  saveMapView,
+  saveRecording,
+  saveRole,
+  saveRoute,
+  saveTeam,
+  saveUser,
+  saveZone,
+  seekReplay,
+  seekScenario,
+  setAlertMuted,
+  setFlag,
+  setLayerOpacity,
+  setPlanView,
+  setReplayPlaying,
+  setScenarioPlaying,
+  setSimulation,
+  shareGraphic,
+  startRecording,
+  stepReplay,
+  stopRecording,
+  subscribeWorkbench,
+  undoPlanning,
+  updateBasemap,
+  updateFeature,
+  updateGraphic,
+  updatePassword,
+  updateStream,
+} from './directory'
