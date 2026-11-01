@@ -2,10 +2,15 @@ const fieldTheme = {
   id: 'field',
   name: 'Field',
   mode: 'dark',
-  primary: '#1f6b45',
+  primary: '#3caf72',
+  primaryContrast: '#062116',
   secondary: '#d4b15a',
+  secondaryContrast: '#1c1914',
   backgroundDefault: '#0d1411',
   backgroundPaper: '#16211c',
+  textPrimary: '#e8f0ea',
+  textSecondary: '#b7c6bd',
+  divider: 'rgba(232, 240, 234, 0.16)',
   fontFamily: '"Roboto", "Segoe UI", sans-serif',
   borderRadius: 8,
 }
@@ -14,10 +19,15 @@ const nightTheme = {
   id: 'night',
   name: 'Night watch',
   mode: 'dark',
-  primary: '#1d4e89',
+  primary: '#8eb7e0',
+  primaryContrast: '#0c1218',
   secondary: '#d4b15a',
+  secondaryContrast: '#1c1914',
   backgroundDefault: '#0c1218',
   backgroundPaper: '#152033',
+  textPrimary: '#e7eef6',
+  textSecondary: '#b7c6d6',
+  divider: 'rgba(231, 238, 246, 0.16)',
   fontFamily: '"Roboto", "Segoe UI", sans-serif',
   borderRadius: 8,
 }
@@ -26,10 +36,15 @@ const sandTheme = {
   id: 'sand',
   name: 'Sand',
   mode: 'light',
-  primary: '#6b5424',
+  primary: '#5a4616',
+  primaryContrast: '#fffdf8',
   secondary: '#1f6b45',
-  backgroundDefault: '#f3efe4',
+  secondaryContrast: '#f7fbf8',
+  backgroundDefault: '#f4f0e6',
   backgroundPaper: '#fffdf8',
+  textPrimary: '#1c1914',
+  textSecondary: '#5c564c',
+  divider: 'rgba(28, 25, 20, 0.14)',
   fontFamily: '"Roboto", "Segoe UI", sans-serif',
   borderRadius: 8,
 }
@@ -41,9 +56,14 @@ export const themes = [fieldTheme, nightTheme, sandTheme]
 export const exerciseTheme = {
   mode: fieldTheme.mode,
   primary: fieldTheme.primary,
+  primaryContrast: fieldTheme.primaryContrast,
   secondary: fieldTheme.secondary,
+  secondaryContrast: fieldTheme.secondaryContrast,
   backgroundDefault: fieldTheme.backgroundDefault,
   backgroundPaper: fieldTheme.backgroundPaper,
+  textPrimary: fieldTheme.textPrimary,
+  textSecondary: fieldTheme.textSecondary,
+  divider: fieldTheme.divider,
   fontFamily: fieldTheme.fontFamily,
   borderRadius: fieldTheme.borderRadius,
 }
@@ -56,62 +76,81 @@ const mapFilters = [
   { id: 'disputed', label: 'Disputed areas', group: 'Reference', layers: 'ne:disputed_areas', base: false, transparent: true },
 ]
 
+const resourceCatalog = [
+  { id: 'fuel', name: 'Fuel', detail: 'Bulk fuel for the active game', status: 'Open' },
+  { id: 'ammunition', name: 'Ammunition', detail: 'Holdings released to this role', status: 'Open' },
+  { id: 'air-effort', name: 'Air effort', detail: 'Sortie allocation', status: 'Held' },
+  { id: 'shipping', name: 'Shipping', detail: 'Sea lift for the active game', status: 'Open' },
+  { id: 'medical', name: 'Medical', detail: 'Field medical cover', status: 'Open' },
+]
+
+const planCatalog = [
+  { id: 'northern-plan', name: 'Northern Approach', detail: 'Plan for the active scenario', status: 'Active' },
+  { id: 'southern-plan', name: 'Southern Approach', detail: 'Held plan', status: 'Held' },
+  { id: 'air-plan', name: 'Air support', detail: 'Air tasking for Game Alpha', status: 'Active' },
+  { id: 'maritime-plan', name: 'Sea control', detail: 'Maritime plan for Game Alpha', status: 'Active' },
+]
+
+const mapItems = [
+  { id: 'filters', label: 'Map filters', icon: 'layers' },
+  { id: 'extent', label: 'Home extent', icon: 'extent' },
+]
+
+const gameItems = {
+  resources: { id: 'resources', label: 'Resources', icon: 'resources' },
+  plans: { id: 'plans', label: 'Plans', icon: 'plans' },
+  control: { id: 'exercise-control', label: 'Exercise control', icon: 'control' },
+}
+
+function navigation(includeControl) {
+  const items = [gameItems.resources, gameItems.plans]
+  if (includeControl) items.push(gameItems.control)
+  return [
+    { id: 'map', label: 'Map', items: mapItems },
+    { id: 'game', label: 'Game', items },
+  ]
+}
+
 const grants = {
   apex: {
     canSelectScenario: true,
     canControlGame: true,
-    options: [
-      { id: 'extent', label: 'Home extent' },
-      { id: 'filters', label: 'Map filters' },
-      { id: 'themes', label: 'Themes' },
-      { id: 'exercise-control', label: 'Exercise control' },
-    ],
     filterIds: ['countries', 'places', 'coast', 'boundaries', 'disputed'],
     defaults: { countries: true, places: true, coast: false, boundaries: false, disputed: false },
+    resourceIds: ['fuel', 'ammunition', 'air-effort', 'shipping', 'medical'],
+    planIds: ['northern-plan', 'southern-plan', 'air-plan', 'maritime-plan'],
   },
   direction: {
     canSelectScenario: true,
     canControlGame: false,
-    options: [
-      { id: 'extent', label: 'Home extent' },
-      { id: 'filters', label: 'Map filters' },
-      { id: 'themes', label: 'Themes' },
-    ],
     filterIds: ['countries', 'places', 'coast', 'boundaries'],
     defaults: { countries: true, places: true, coast: false, boundaries: true },
+    resourceIds: ['fuel', 'ammunition', 'air-effort', 'medical'],
+    planIds: ['northern-plan', 'southern-plan', 'air-plan'],
   },
   theatre: {
     canSelectScenario: false,
     canControlGame: false,
-    options: [
-      { id: 'extent', label: 'Home extent' },
-      { id: 'filters', label: 'Map filters' },
-      { id: 'themes', label: 'Themes' },
-    ],
     filterIds: ['countries', 'places', 'coast'],
     defaults: { countries: true, places: true, coast: false },
+    resourceIds: ['fuel', 'ammunition', 'medical'],
+    planIds: ['northern-plan', 'southern-plan'],
   },
   air: {
     canSelectScenario: false,
     canControlGame: false,
-    options: [
-      { id: 'extent', label: 'Home extent' },
-      { id: 'filters', label: 'Map filters' },
-      { id: 'themes', label: 'Themes' },
-    ],
     filterIds: ['countries', 'places', 'coast'],
     defaults: { countries: true, places: true, coast: false },
+    resourceIds: ['fuel', 'air-effort'],
+    planIds: ['air-plan', 'northern-plan'],
   },
   maritime: {
     canSelectScenario: false,
     canControlGame: false,
-    options: [
-      { id: 'extent', label: 'Home extent' },
-      { id: 'filters', label: 'Map filters' },
-      { id: 'themes', label: 'Themes' },
-    ],
     filterIds: ['countries', 'coast', 'places'],
     defaults: { countries: true, places: false, coast: true },
+    resourceIds: ['fuel', 'shipping'],
+    planIds: ['maritime-plan'],
   },
 }
 
@@ -162,10 +201,14 @@ export const loginContext = {
   activeScenarioName: activeScenario?.name || '',
   activeGameName: activeGame.open ? activeGame.name : '',
   gameOpen: activeGame.open,
-  backgroundImage: '/login-background.svg',
+  backgroundImage: '/login-background.png',
   passwordHint: 'Exercise access: layout',
   theme: exerciseTheme,
   users: users.map(({ id, title, role, service, avatarUrl }) => ({ id, title, role, service, avatarUrl })),
+}
+
+function pick(catalog, ids) {
+  return catalog.filter((item) => ids.includes(item.id))
 }
 
 export function sessionFor(userId) {
@@ -187,7 +230,9 @@ export function sessionFor(userId) {
     selectedScenarioId: activeScenario?.id || scenarios[0].id,
     activeScenarioId: activeScenario?.id || scenarios[0].id,
     activeGame: { id: activeGame.id, name: activeGame.name },
-    options: grant.options,
+    navigation: navigation(grant.canControlGame),
+    resources: pick(resourceCatalog, grant.resourceIds),
+    plans: pick(planCatalog, grant.planIds),
     filters: mapFilters
       .filter((filter) => grant.filterIds.includes(filter.id))
       .map((filter) => ({ ...filter, visible: Boolean(grant.defaults[filter.id]) })),

@@ -1,32 +1,56 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
-import { Box, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
+import { Box, Drawer, ToggleButton, ToggleButtonGroup, useMediaQuery } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import LoginPage from '../features/login/LoginPage'
-import { usePictureActions } from '../features/session/usePictureActions'
+import { useChrome } from '../features/session/useChrome'
 import { useSessionStore } from '../features/session/useSessionStore'
-import { ExerciseClock } from '../shared/ui/ExerciseClock'
-import { ExerciseControls } from '../shared/ui/ExerciseControls'
-import { FilterList } from '../shared/ui/FilterList'
-import { GameStateChip } from '../shared/ui/GameStateChip'
+import { ContextStrip, TopBar } from '../shared/ui/TopBar'
+import { IconRail } from '../shared/ui/IconRail'
+import { IconStrip } from '../shared/ui/IconStrip'
 import { MapStage } from '../shared/ui/MapStage'
-import { RoleOptions } from '../shared/ui/RoleOptions'
-import { ScenarioContext } from '../shared/ui/ScenarioContext'
-import { UserMenu } from '../shared/ui/UserMenu'
+import { ToolPanel } from '../shared/ui/ToolPanel'
 
-function Picture() {
+function PhaseSwitch() {
   const phases = useSessionStore((state) => state.session?.phases || [])
   const phaseId = useSessionStore((state) => state.phaseId)
   const applyPhase = useSessionStore((state) => state.applyPhase)
-  const canControl = useSessionStore((state) => state.session?.canControlGame)
-  const dockRef = useRef(null)
+  return (
+    <ToggleButtonGroup
+      exclusive
+      size="small"
+      value={phaseId}
+      aria-label="Picture phase"
+      onChange={(_, id) => {
+        if (id) applyPhase(id)
+      }}
+      sx={{ flexShrink: 0 }}
+    >
+      {phases.map((phase) => (
+        <ToggleButton
+          key={phase.id}
+          value={phase.id}
+          sx={{
+            minHeight: 32,
+            px: 1.25,
+            py: 0.25,
+            color: 'text.secondary',
+            '&.Mui-selected': { color: 'text.primary', bgcolor: 'action.selected' },
+          }}
+        >
+          {phase.label}
+        </ToggleButton>
+      ))}
+    </ToggleButtonGroup>
+  )
+}
+
+function Picture() {
+  const theme = useTheme()
+  const isPhone = useMediaQuery(theme.breakpoints.down('sm'))
+  const chrome = useChrome()
+  const applyPhase = useSessionStore((state) => state.applyPhase)
   const applied = useRef(false)
-  const [controlOpen, setControlOpen] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
-  const onAction = usePictureActions({
-    onFilters: () => dockRef.current?.scrollIntoView({ block: 'nearest' }),
-    onThemes: () => setMenuOpen(true),
-    onControl: () => setControlOpen((open) => !open),
-  })
 
   useEffect(() => {
     if (applied.current) return
@@ -35,70 +59,41 @@ function Picture() {
   }, [applyPhase])
 
   return (
-    <Box sx={{ height: '100%', overflow: 'auto', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-      <Box
-        sx={{
-          px: { xs: 1.5, md: 2 },
-          py: 1,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 2,
-          flexWrap: 'wrap',
-          borderBottom: 1,
-          borderColor: 'divider',
-        }}
-      >
-        <Typography variant="overline" sx={{ letterSpacing: '0.16em' }}>
-          Jayant
-        </Typography>
-        <ScenarioContext />
-        <Box sx={{ flex: '1 1 16px' }} />
-        <GameStateChip />
-        <ExerciseClock />
-        <UserMenu open={menuOpen} onOpenChange={setMenuOpen} />
-      </Box>
-      <Box
-        sx={{
-          px: { xs: 1.5, md: 2 },
-          py: 1,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 2,
-          flexWrap: 'wrap',
-          borderBottom: 1,
-          borderColor: 'divider',
-        }}
-      >
-        <ToggleButtonGroup
-          exclusive
-          value={phaseId}
-          onChange={(_, id) => {
-            if (id) applyPhase(id)
-          }}
-          aria-label="Picture phase"
-        >
-          {phases.map((phase) => (
-            <ToggleButton key={phase.id} value={phase.id} sx={{ minHeight: 44, px: 2.5 }}>
-              {phase.label}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
-        <Typography variant="caption" color="text.secondary" sx={{ flex: '1 1 200px' }}>
-          A phase sets the layers that are shown.
-        </Typography>
-        <RoleOptions direction="row" onAction={onAction} />
-      </Box>
-      {controlOpen && canControl ? (
-        <Box sx={{ px: { xs: 1.5, md: 2 }, py: 1, borderBottom: 1, borderColor: 'divider' }}>
-          <ExerciseControls />
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0, bgcolor: 'background.default' }}>
+      <TopBar
+        menuOpen={chrome.menuOpen}
+        onMenuOpenChange={chrome.setMenuOpen}
+        trailing={isPhone ? null : <PhaseSwitch />}
+      />
+      <ContextStrip />
+      {isPhone ? (
+        <Box sx={{ px: 1, py: 0.5, borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper', overflowX: 'auto' }}>
+          <PhaseSwitch />
         </Box>
       ) : null}
-      <Box sx={{ flex: 1, minHeight: 280, display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
         <MapStage />
+        {!isPhone && chrome.panel ? (
+          <Box sx={{ width: 300, flexShrink: 0, borderLeft: 1, borderColor: 'divider', minHeight: 0 }}>
+            <ToolPanel panel={chrome.panel} onClose={chrome.closePanel} />
+          </Box>
+        ) : null}
+        {!isPhone ? (
+          <IconRail
+            edge="end"
+            expanded={chrome.expanded}
+            onToggle={() => chrome.setExpanded((open) => !open)}
+            activeId={chrome.panel}
+            onSelect={chrome.select}
+          />
+        ) : null}
       </Box>
-      <Box ref={dockRef} sx={{ px: { xs: 1.5, md: 2 }, py: 1.25, borderTop: 1, borderColor: 'divider' }}>
-        <FilterList variant="chips" />
-      </Box>
+      {isPhone ? <IconStrip activeId={chrome.panel} onSelect={chrome.select} /> : null}
+      {isPhone ? (
+        <Drawer anchor="bottom" open={Boolean(chrome.panel)} onClose={chrome.closePanel}>
+          <ToolPanel panel={chrome.panel} onClose={chrome.closePanel} />
+        </Drawer>
+      ) : null}
     </Box>
   )
 }
