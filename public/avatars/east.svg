@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img">
+  <rect width="80" height="80" fill="#1a2418"/>
+  <rect x="3" y="3" width="74" height="74" fill="none" stroke="#8fbc8f" stroke-width="2"/>
+  <text x="40" y="46" text-anchor="middle" fill="#e7efe9" font-family="Roboto, Segoe UI, sans-serif" font-size="18" font-weight="700">ETC</text>
+</svg>

@@ -1,49 +1,90 @@
 import { create } from 'zustand'
 import dayjs from 'dayjs'
-import { findNode } from '../../shared/lib/tree'
 
-const START = '2026-10-28T06:00:00'
-const startEpochMs = dayjs(START).valueOf()
-
-function initialSelection(session) {
-  if (!session) return null
-  return findNode(session.commandTree, session.position.id)?.id || session.commandTree?.id || null
-}
+const FALLBACK = '2026-10-28T06:00:00'
 
 export const useSessionStore = create((set, get) => ({
   session: null,
-  selectedId: null,
   status: 'ready',
-  epochMs: startEpochMs,
+  epochMs: dayjs(FALLBACK).valueOf(),
+  resetToken: 0,
+  phaseId: null,
   signIn: (session) =>
     set({
       session,
-      selectedId: initialSelection(session),
       status: 'ready',
-      epochMs: startEpochMs,
+      epochMs: dayjs(session.clockStart || FALLBACK).valueOf(),
+      resetToken: 0,
+      phaseId: null,
     }),
   signOut: () =>
     set({
       session: null,
-      selectedId: null,
       status: 'ready',
-      epochMs: startEpochMs,
+      epochMs: dayjs(FALLBACK).valueOf(),
+      resetToken: 0,
+      phaseId: null,
     }),
-  select: (id) => set({ selectedId: id }),
+  setScenario: (id) =>
+    set((state) => {
+      if (!state.session?.canSelectScenario) return state
+      if (!state.session.scenarios.some((item) => item.id === id)) return state
+      return { session: { ...state.session, selectedScenarioId: id } }
+    }),
+  setTheme: (themeId) =>
+    set((state) => {
+      const theme = state.session?.themes.find((item) => item.id === themeId)
+      if (!theme) return state
+      return { session: { ...state.session, theme } }
+    }),
+  setFilter: (id, visible) =>
+    set((state) => {
+      if (!state.session?.filters.some((filter) => filter.id === id)) return state
+      return {
+        phaseId: null,
+        session: {
+          ...state.session,
+          filters: state.session.filters.map((filter) => (filter.id === id ? { ...filter, visible } : filter)),
+        },
+      }
+    }),
+  applyPhase: (phaseId) =>
+    set((state) => {
+      const phase = state.session?.phases.find((item) => item.id === phaseId)
+      if (!phase) return state
+      const show = new Set(phase.filterIds)
+      return {
+        phaseId,
+        session: {
+          ...state.session,
+          filters: state.session.filters.map((filter) => ({ ...filter, visible: show.has(filter.id) })),
+        },
+      }
+    }),
+  requestExtent: () => set((state) => ({ resetToken: state.resetToken + 1 })),
   start: () => {
-    const { status } = get()
+    const { status, session } = get()
+    if (!session?.canControlGame) return
     if (status === 'running' || status === 'paused') return
     set({ status: 'running' })
   },
   pause: () => {
-    if (get().status === 'running') set({ status: 'paused' })
+    const { status, session } = get()
+    if (!session?.canControlGame || status !== 'running') return
+    set({ status: 'paused' })
   },
   resume: () => {
-    if (get().status === 'paused') set({ status: 'running' })
+    const { status, session } = get()
+    if (!session?.canControlGame || status !== 'paused') return
+    set({ status: 'running' })
   },
-  restart: () => set({ status: 'ready', epochMs: startEpochMs }),
+  restart: () => {
+    if (!get().session?.canControlGame) return
+    set({ status: 'ready', epochMs: dayjs(get().session.clockStart || FALLBACK).valueOf() })
+  },
   end: () => {
-    const { status } = get()
+    const { status, session } = get()
+    if (!session?.canControlGame) return
     if (status === 'ready' || status === 'ended') return
     set({ status: 'ended' })
   },

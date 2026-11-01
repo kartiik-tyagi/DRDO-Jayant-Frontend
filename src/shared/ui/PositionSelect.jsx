@@ -1,18 +1,23 @@
-import { MenuItem, TextField } from '@mui/material'
+import { Box, MenuItem, TextField, Typography } from '@mui/material'
 
-export function PositionSelect({ positions, value, onChange }) {
+export function PositionSelect({ users, value, onChange }) {
   return (
     <TextField
       select
       required
       fullWidth
-      label="Position"
+      label="User"
       value={value}
       onChange={(event) => onChange(event.target.value)}
     >
-      {(positions || []).map((position) => (
-        <MenuItem key={position.id} value={position.id} sx={{ minHeight: 44 }}>
-          {position.title}
+      {(users || []).map((user) => (
+        <MenuItem key={user.id} value={user.id} sx={{ minHeight: 44 }}>
+          <Box>
+            <Typography variant="body2">{user.title}</Typography>
+            <Typography variant="caption" color="text.secondary">
+              {user.role}
+            </Typography>
+          </Box>
         </MenuItem>
       ))}
     </TextField>
