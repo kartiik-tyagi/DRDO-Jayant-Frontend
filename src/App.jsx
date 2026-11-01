@@ -2,10 +2,22 @@ import { useEffect, useMemo, useState } from 'react'
 import { Box, CircularProgress, Alert } from '@mui/material'
 import { ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter } from 'react-router-dom'
 import { loadConfig } from './config/loadConfig'
 import { createAppTheme } from './theme/createAppTheme'
 import AppRoutes from './layout/AppRoutes'
+
+// Memory only. Exercise data must not be written to local storage.
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      gcTime: 5 * 60 * 1000,
+    },
+  },
+})
 
 export default function App() {
   const [config, setConfig] = useState(null)
@@ -47,11 +59,13 @@ export default function App() {
   }
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <BrowserRouter>
-        <AppRoutes config={config} />
-      </BrowserRouter>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <BrowserRouter>
+          <AppRoutes config={config} />
+        </BrowserRouter>
+      </ThemeProvider>
+    </QueryClientProvider>
   )
 }

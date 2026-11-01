@@ -5,12 +5,19 @@ body,
   margin: 0;
 }
 
-.force-marker {
-  background: transparent;
-  border: none;
-}
-
-.leaflet-container {
+.situation-map {
   background: #102018;
   font-family: "Roboto", "Segoe UI", sans-serif;
+}
+
+.situation-map .ol-zoom {
+  top: auto;
+  left: auto;
+  bottom: 0.5em;
+  right: 0.5em;
+}
+
+.situation-map .ol-scale-line {
+  left: 0.5em;
+  bottom: 0.5em;
 }
