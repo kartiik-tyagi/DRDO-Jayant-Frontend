@@ -167,6 +167,10 @@ export const useSessionStore = create((set, get) => ({
       }
     }),
   requestExtent: () => set((state) => ({ resetToken: state.resetToken + 1 })),
+  seek: (epochMs) => {
+    if (!get().session?.canControlGame || !Number.isFinite(epochMs)) return
+    set({ epochMs, status: 'paused' })
+  },
   start: () => {
     const { status, session } = get()
     if (!session?.canControlGame) return

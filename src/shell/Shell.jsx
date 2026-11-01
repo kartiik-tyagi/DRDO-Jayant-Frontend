@@ -8,7 +8,7 @@ import { useChrome } from '../features/session/useChrome'
 import { useSessionStore } from '../features/session/useSessionStore'
 import { ContextStrip, TopBar } from '../shared/ui/TopBar'
 import { IconRail } from '../shared/ui/IconRail'
-import { MapStage } from '../shared/ui/MapStage'
+import { PictureWorkspace } from '../shared/ui/PictureWorkspace'
 import { ToolPanel } from '../shared/ui/ToolPanel'
 
 function Picture() {
@@ -62,7 +62,7 @@ function Picture() {
             <ToolPanel panel={chrome.panel} onClose={chrome.closePanel} />
           </Box>
         ) : null}
-        <MapStage />
+        <PictureWorkspace variant="dock" />
       </Box>
     </Box>
   )
