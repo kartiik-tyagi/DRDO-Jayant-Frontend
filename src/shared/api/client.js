@@ -14,9 +14,14 @@ export class ApiError extends Error {
 const themeSchema = z.object({
   mode: z.enum(['dark', 'light']),
   primary: z.string(),
+  primaryContrast: z.string(),
   secondary: z.string(),
+  secondaryContrast: z.string(),
   backgroundDefault: z.string(),
   backgroundPaper: z.string(),
+  textPrimary: z.string(),
+  textSecondary: z.string(),
+  divider: z.string(),
   fontFamily: z.string(),
   borderRadius: z.number(),
 })
@@ -67,7 +72,17 @@ const sessionSchema = z.object({
   selectedScenarioId: z.string(),
   activeScenarioId: z.string(),
   activeGame: z.object({ id: z.string(), name: z.string() }),
-  options: z.array(z.object({ id: z.string(), label: z.string() })).min(1),
+  navigation: z
+    .array(
+      z.object({
+        id: z.string(),
+        label: z.string(),
+        items: z.array(z.object({ id: z.string(), label: z.string(), icon: z.string() })).min(1),
+      }),
+    )
+    .min(1),
+  resources: z.array(z.object({ id: z.string(), name: z.string(), detail: z.string(), status: z.string() })),
+  plans: z.array(z.object({ id: z.string(), name: z.string(), detail: z.string(), status: z.string() })),
   filters: z.array(filterSchema).min(1),
   phases: z.array(z.object({ id: z.string(), label: z.string(), filterIds: z.array(z.string()) })),
   canSelectScenario: z.boolean(),
