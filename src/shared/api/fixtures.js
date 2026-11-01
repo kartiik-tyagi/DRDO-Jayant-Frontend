@@ -49,7 +49,7 @@ const sandTheme = {
   borderRadius: 8,
 }
 
-export const DEMO_PASSWORD = 'layout'
+export const DEMO_PASSWORD = '123'
 
 export const themes = [fieldTheme, nightTheme, sandTheme]
 
@@ -202,7 +202,7 @@ export const loginContext = {
   activeGameName: activeGame.open ? activeGame.name : '',
   gameOpen: activeGame.open,
   backgroundImage: '/login-background.png',
-  passwordHint: 'Exercise access: layout',
+  passwordHint: 'Exercise access: 123',
   theme: exerciseTheme,
   users: users.map(({ id, title, role, service, avatarUrl }) => ({ id, title, role, service, avatarUrl })),
 }
