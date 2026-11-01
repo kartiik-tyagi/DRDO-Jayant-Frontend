@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { logger } from '../lib/logger'
 import { DEMO_PASSWORD, loginContext, sessionFor } from './fixtures'
 
 const wait = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms))
@@ -108,23 +109,48 @@ function readContext() {
   return { ...data, users: data.users.filter((user) => user.id === 'apex') }
 }
 
-export async function getLoginContext() {
-  await wait(180)
-  return readContext()
-}
-
-export async function login({ userId, password }) {
-  await wait(220)
+function sessionFromDirectory(userId) {
   const context = readContext()
-  if (!password) throw new ApiError('Enter the access password.', 'VALIDATION')
-  if (password !== DEMO_PASSWORD) throw new ApiError('Access refused.', 'VALIDATION')
   const user = context.users.find((item) => item.id === userId)
-  if (!user) throw new ApiError('Select a user.', 'VALIDATION')
+  if (!user) throw new ApiError('This session is no longer valid.', 'SESSION')
   if (!context.gameOpen && user.id !== 'apex') {
     throw new ApiError('No game is active. Only APEX may sign in.', 'NOT_ACTIVE_GAME')
   }
-  const session = sessionFor(user.id)
-  const parsed = sessionSchema.safeParse(session)
+  const parsed = sessionSchema.safeParse(sessionFor(user.id))
   if (!parsed.success) throw new ApiError('The user profile could not be read.', 'VALIDATION')
   return parsed.data
+}
+
+export async function getLoginContext() {
+  try {
+    await wait(180)
+    return readContext()
+  } catch (error) {
+    logger.error('directory.unreadable', { code: error?.code || 'UNKNOWN', message: error?.message })
+    throw error
+  }
+}
+
+export async function login({ userId, password }) {
+  try {
+    await wait(220)
+    if (!password) throw new ApiError('Enter the access password.', 'VALIDATION')
+    if (password !== DEMO_PASSWORD) throw new ApiError('Access refused.', 'VALIDATION')
+    if (!userId) throw new ApiError('Select a user.', 'VALIDATION')
+    return sessionFromDirectory(userId)
+  } catch (error) {
+    logger.warn('auth.rejected', { userId: userId || null, code: error?.code || 'UNKNOWN' })
+    throw error
+  }
+}
+
+export async function resumeSession(userId) {
+  try {
+    await wait(80)
+    if (!userId) throw new ApiError('The saved session is not valid.', 'SESSION')
+    return sessionFromDirectory(userId)
+  } catch (error) {
+    logger.warn('session.restore_rejected', { userId: userId || null, code: error?.code || 'UNKNOWN' })
+    throw error
+  }
 }
