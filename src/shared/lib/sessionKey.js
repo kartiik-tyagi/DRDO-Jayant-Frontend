@@ -1,6 +1,7 @@
 import { logger } from './logger'
 
 const KEY = 'jayant.session'
+const EXERCISE_KEY = 'jayant.exercise'
 
 export function readSessionKey() {
   try {
@@ -30,6 +31,40 @@ export function writeSessionKey(userId) {
     return true
   } catch (error) {
     logger.warn('session.storage_unavailable', { message: error?.message || 'storage unavailable' })
+    return false
+  }
+}
+
+export function readExerciseChoice() {
+  try {
+    const raw = sessionStorage.getItem(EXERCISE_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    const scenarioId = typeof parsed?.scenarioId === 'string' ? parsed.scenarioId : null
+    const gameId = typeof parsed?.gameId === 'string' ? parsed.gameId : null
+    if (!scenarioId && !gameId) {
+      sessionStorage.removeItem(EXERCISE_KEY)
+      logger.warn('exercise.storage_invalid')
+      return null
+    }
+    return { scenarioId, gameId }
+  } catch (error) {
+    logger.warn('exercise.storage_unreadable', { message: error?.message || 'storage unavailable' })
+    try {
+      sessionStorage.removeItem(EXERCISE_KEY)
+    } catch {
+      /* storage can be blocked */
+    }
+    return null
+  }
+}
+
+export function writeExerciseChoice(choice) {
+  try {
+    sessionStorage.setItem(EXERCISE_KEY, JSON.stringify({ scenarioId: choice.scenarioId, gameId: choice.gameId }))
+    return true
+  } catch (error) {
+    logger.warn('exercise.storage_unavailable', { message: error?.message || 'storage unavailable' })
     return false
   }
 }
