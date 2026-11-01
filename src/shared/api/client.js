@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { logger } from '../lib/logger'
-import { DEMO_PASSWORD, loginContext, sessionFor } from './fixtures'
+import { readExerciseChoice, writeExerciseChoice } from '../lib/sessionKey'
+import { DEMO_PASSWORD, activateGame, activateScenario, adoptExercise, exerciseChoice, loginContext, sessionFor } from './fixtures'
 
 const wait = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms))
 
@@ -73,6 +74,7 @@ const sessionSchema = z.object({
   selectedScenarioId: z.string(),
   activeScenarioId: z.string(),
   activeGame: z.object({ id: z.string(), name: z.string() }),
+  games: z.array(z.object({ id: z.string(), name: z.string(), open: z.boolean() })).min(1),
   navigation: z
     .array(
       z.object({
@@ -87,6 +89,7 @@ const sessionSchema = z.object({
   filters: z.array(filterSchema).min(1),
   phases: z.array(z.object({ id: z.string(), label: z.string(), filterIds: z.array(z.string()) })),
   canSelectScenario: z.boolean(),
+  canSelectGame: z.boolean(),
   canControlGame: z.boolean(),
   mapView: z.object({
     latitude: z.number(),
@@ -101,8 +104,19 @@ const sessionSchema = z.object({
   classification: z.string(),
 })
 
+let exerciseHydrated = false
+
+function hydrateExercise() {
+  if (exerciseHydrated) return
+  exerciseHydrated = true
+  const rejected = adoptExercise(readExerciseChoice())
+  if (rejected.scenarioId) logger.warn('scenario.restore_rejected', { scenarioId: rejected.scenarioId, code: 'UNKNOWN' })
+  if (rejected.game) logger.warn('game.restore_rejected', { gameId: rejected.game.id, code: rejected.game.code })
+}
+
 function readContext() {
-  const parsed = loginContextSchema.safeParse(loginContext)
+  hydrateExercise()
+  const parsed = loginContextSchema.safeParse(loginContext())
   if (!parsed.success) throw new ApiError('The exercise directory could not be read.', 'VALIDATION')
   const data = parsed.data
   if (data.gameOpen) return data
@@ -151,6 +165,46 @@ export async function resumeSession(userId) {
     return sessionFromDirectory(userId)
   } catch (error) {
     logger.warn('session.restore_rejected', { userId: userId || null, code: error?.code || 'UNKNOWN' })
+    throw error
+  }
+}
+
+function persistExercise(userId, event, idName, id) {
+  const persisted = writeExerciseChoice(exerciseChoice())
+  logger.info(event, { userId, [idName]: id, persisted })
+}
+
+export async function changeScenario({ userId, scenarioId }) {
+  try {
+    await wait(160)
+    hydrateExercise()
+    const session = sessionFromDirectory(userId)
+    if (!session.canSelectScenario) throw new ApiError('This user cannot change the scenario.', 'FORBIDDEN')
+    if (!scenarioId) throw new ApiError('Select a scenario.', 'VALIDATION')
+    const result = activateScenario(scenarioId)
+    if (!result.ok) throw new ApiError('That scenario is not in this exercise.', 'NOT_FOUND')
+    if (!result.unchanged) persistExercise(userId, 'scenario.changed', 'scenarioId', result.id)
+    return { activeScenarioId: result.id, name: result.name }
+  } catch (error) {
+    logger.warn('scenario.change_rejected', { userId: userId || null, scenarioId: scenarioId || null, code: error?.code || 'UNKNOWN' })
+    throw error
+  }
+}
+
+export async function changeGame({ userId, gameId }) {
+  try {
+    await wait(160)
+    hydrateExercise()
+    const session = sessionFromDirectory(userId)
+    if (!session.canSelectGame) throw new ApiError('This user cannot change the game.', 'FORBIDDEN')
+    if (!gameId) throw new ApiError('Select a game.', 'VALIDATION')
+    const result = activateGame(gameId)
+    if (!result.ok && result.code === 'CLOSED') throw new ApiError('That game is closed.', 'CLOSED')
+    if (!result.ok) throw new ApiError('That game is not in this exercise.', 'NOT_FOUND')
+    if (!result.unchanged) persistExercise(userId, 'game.changed', 'gameId', result.id)
+    return { activeGameId: result.id, name: result.name }
+  } catch (error) {
+    logger.warn('game.change_rejected', { userId: userId || null, gameId: gameId || null, code: error?.code || 'UNKNOWN' })
     throw error
   }
 }
