@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Alert, Avatar, Box, Button, Stack, Typography } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { getLoginContext, login } from '../../shared/api/client'
@@ -25,6 +26,8 @@ function Fact({ label, value }) {
 export default function LoginPage() {
   const navigate = useNavigate()
   const signIn = useSessionStore((state) => state.signIn)
+  const notice = useSessionStore((state) => state.notice)
+  const clearNotice = useSessionStore((state) => state.clearNotice)
   const [userId, setUserId] = useState('')
   const [password, setPassword] = useState('')
   const context = useQuery({ queryKey: ['login-context'], queryFn: getLoginContext })
@@ -60,7 +63,17 @@ export default function LoginPage() {
   const selected = data.users.find((user) => user.id === userId)
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.default', color: 'text.primary' }}>
+    <Box
+      sx={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        color: 'text.primary',
+        backgroundImage: `linear-gradient(90deg, rgba(6, 10, 8, 0.2), rgba(6, 10, 8, 0.45)), url(${data.backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
       <Box
         sx={{
           px: 2,
@@ -69,7 +82,7 @@ export default function LoginPage() {
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: 2,
-          bgcolor: '#0a0e0c',
+          bgcolor: 'rgba(10, 14, 12, 0.72)',
           color: '#e8f0ea',
         }}
       >
@@ -80,38 +93,34 @@ export default function LoginPage() {
           {data.accessNotice}
         </Typography>
       </Box>
-      <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          overflow: 'auto',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: { xs: 'center', md: 'flex-end' },
+          px: { xs: 2, md: 6 },
+          py: 3,
+        }}
+      >
         <Box
-          aria-hidden
-          sx={{
-            flex: { md: '1.2 1 0' },
-            minHeight: { xs: 168, md: 0 },
-            backgroundImage: `linear-gradient(180deg, rgba(8, 12, 10, 0.18), rgba(8, 12, 10, 0.28)), url(${data.backgroundImage})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
+          component="form"
+          onSubmit={(event) => {
+            event.preventDefault()
+            clearNotice()
+            attempt.mutate({ userId, password })
           }}
-        />
-        <Box
           sx={{
-            width: { md: 'min(460px, 40vw)' },
-            flexShrink: 0,
-            overflow: 'auto',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            bgcolor: 'background.paper',
-            px: { xs: 2.5, sm: 5 },
-            py: { xs: 3, sm: 4 },
+            width: 'min(400px, 100%)',
+            p: { xs: 2.5, sm: 3 },
+            bgcolor: (theme) => alpha(theme.palette.background.paper, 0.94),
+            border: 1,
+            borderColor: 'divider',
+            boxShadow: 8,
           }}
         >
-          <Box
-            component="form"
-            onSubmit={(event) => {
-              event.preventDefault()
-              attempt.mutate({ userId, password })
-            }}
-            sx={{ width: '100%', maxWidth: 360 }}
-          >
             <Stack spacing={2.5}>
               <Box>
                 <Typography variant="overline" color="primary" sx={{ letterSpacing: '0.2em' }}>
@@ -143,6 +152,11 @@ export default function LoginPage() {
               ) : null}
               <PositionSelect users={data.users} value={userId} onChange={setUserId} />
               <PasswordField value={password} onChange={setPassword} />
+              {notice ? (
+                <Alert severity="warning" onClose={clearNotice}>
+                  {notice}
+                </Alert>
+              ) : null}
               {attempt.isError ? <Alert severity="error">{attempt.error.message}</Alert> : null}
               <Button type="submit" variant="contained" disabled={attempt.isPending || !userId} sx={{ minHeight: 44 }}>
                 {attempt.isPending ? 'Signing in' : 'Sign in'}
@@ -153,7 +167,6 @@ export default function LoginPage() {
                 </Typography>
               ) : null}
             </Stack>
-          </Box>
         </Box>
       </Box>
     </Box>
