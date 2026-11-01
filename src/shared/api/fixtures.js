@@ -166,11 +166,61 @@ const users = [
 ]
 
 export const scenarios = [
-  { id: 'northern', name: 'Northern Approach', active: true },
-  { id: 'southern', name: 'Southern Approach', active: false },
+  { id: 'northern', name: 'Northern Approach' },
+  { id: 'southern', name: 'Southern Approach' },
 ]
 
-export const activeGame = { id: 'alpha', name: 'Game Alpha', open: true }
+export const games = [
+  { id: 'alpha', name: 'Game Alpha', open: true },
+  { id: 'bravo', name: 'Game Bravo', open: true },
+  { id: 'charlie', name: 'Game Charlie', open: false },
+]
+
+let activeScenarioId = scenarios[0].id
+let activeGameId = games[0].id
+
+export function currentExercise() {
+  const scenario = scenarios.find((item) => item.id === activeScenarioId) || scenarios[0]
+  const game = games.find((item) => item.id === activeGameId) || games.find((item) => item.open) || games[0]
+  return { scenario, game }
+}
+
+export function exerciseChoice() {
+  const { scenario, game } = currentExercise()
+  return { scenarioId: scenario.id, gameId: game.id }
+}
+
+export function adoptExercise(choice) {
+  const rejected = {}
+  if (!choice) return rejected
+  if (choice.scenarioId) {
+    if (scenarios.some((item) => item.id === choice.scenarioId)) activeScenarioId = choice.scenarioId
+    else rejected.scenarioId = choice.scenarioId
+  }
+  if (choice.gameId) {
+    const game = games.find((item) => item.id === choice.gameId)
+    if (game?.open) activeGameId = game.id
+    else rejected.game = { id: choice.gameId, code: game ? 'CLOSED' : 'UNKNOWN' }
+  }
+  return rejected
+}
+
+export function activateScenario(scenarioId) {
+  const scenario = scenarios.find((item) => item.id === scenarioId)
+  if (!scenario) return { ok: false, code: 'NOT_FOUND' }
+  if (scenario.id === activeScenarioId) return { ok: true, unchanged: true, id: scenario.id, name: scenario.name }
+  activeScenarioId = scenario.id
+  return { ok: true, unchanged: false, id: scenario.id, name: scenario.name }
+}
+
+export function activateGame(gameId) {
+  const game = games.find((item) => item.id === gameId)
+  if (!game) return { ok: false, code: 'NOT_FOUND' }
+  if (!game.open) return { ok: false, code: 'CLOSED' }
+  if (game.id === activeGameId) return { ok: true, unchanged: true, id: game.id, name: game.name }
+  activeGameId = game.id
+  return { ok: true, unchanged: false, id: game.id, name: game.name }
+}
 
 export const phases = [
   { id: 'plan', label: 'Plan', filterIds: ['countries', 'boundaries', 'places'] },
@@ -190,21 +240,26 @@ export const mapService = 'http://127.0.0.1:8080/geoserver/wms'
 
 export const clockStart = '2026-10-28T06:00:00'
 
-const activeScenario = scenarios.find((item) => item.active)
-
-export const loginContext = {
+const exerciseMeta = {
   exerciseTitle: 'Exercise Jayant',
   systemName: 'JAYANT',
   classification: 'EXERCISE',
   purpose: 'Situation picture',
   accessNotice: 'Authorised users only',
-  activeScenarioName: activeScenario?.name || '',
-  activeGameName: activeGame.open ? activeGame.name : '',
-  gameOpen: activeGame.open,
   backgroundImage: '/login-background.png',
   passwordHint: 'Exercise access: 123',
   theme: exerciseTheme,
   users: users.map(({ id, title, role, service, avatarUrl }) => ({ id, title, role, service, avatarUrl })),
+}
+
+export function loginContext() {
+  const { scenario, game } = currentExercise()
+  return {
+    ...exerciseMeta,
+    activeScenarioName: scenario?.name || '',
+    activeGameName: game?.open ? game.name : '',
+    gameOpen: Boolean(game?.open),
+  }
 }
 
 function pick(catalog, ids) {
@@ -216,6 +271,7 @@ export function sessionFor(userId) {
   if (!user) return null
   const grant = grants[user.grant]
   const theme = themes.find((item) => item.id === user.themeId) || themes[0]
+  const { scenario, game } = currentExercise()
   return {
     profile: {
       id: user.id,
@@ -226,10 +282,11 @@ export function sessionFor(userId) {
     },
     theme,
     themes,
-    scenarios,
-    selectedScenarioId: activeScenario?.id || scenarios[0].id,
-    activeScenarioId: activeScenario?.id || scenarios[0].id,
-    activeGame: { id: activeGame.id, name: activeGame.name },
+    scenarios: scenarios.map((item) => ({ ...item, active: item.id === scenario.id })),
+    selectedScenarioId: scenario.id,
+    activeScenarioId: scenario.id,
+    activeGame: { id: game.id, name: game.name },
+    games: games.map(({ id, name, open }) => ({ id, name, open })),
     navigation: navigation(grant.canControlGame),
     resources: pick(resourceCatalog, grant.resourceIds),
     plans: pick(planCatalog, grant.planIds),
@@ -238,11 +295,12 @@ export function sessionFor(userId) {
       .map((filter) => ({ ...filter, visible: Boolean(grant.defaults[filter.id]) })),
     phases,
     canSelectScenario: grant.canSelectScenario,
+    canSelectGame: grant.canControlGame,
     canControlGame: grant.canControlGame,
     mapView,
     mapService,
     clockStart,
-    exerciseTitle: loginContext.exerciseTitle,
-    classification: loginContext.classification,
+    exerciseTitle: exerciseMeta.exerciseTitle,
+    classification: exerciseMeta.classification,
   }
 }

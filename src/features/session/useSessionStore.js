@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import dayjs from 'dayjs'
-import { resumeSession } from '../../shared/api/client'
+import { ApiError, changeGame as requestGameChange, changeScenario as requestScenarioChange, resumeSession } from '../../shared/api/client'
 import { logger } from '../../shared/lib/logger'
 import { clearSessionKey, readSessionKey, writeSessionKey } from '../../shared/lib/sessionKey'
 
@@ -78,12 +78,64 @@ export const useSessionStore = create((set, get) => ({
     })
   },
   clearNotice: () => set({ notice: null }),
-  setScenario: (id) =>
+  changeScenario: async (scenarioId) => {
+    const { session, status } = get()
+    if (!session) throw new ApiError('Sign in before changing the scenario.', 'SESSION')
+    const userId = session.profile.id
+    if (!session.canSelectScenario) {
+      logger.warn('scenario.change_rejected', { userId, scenarioId: scenarioId || null, code: 'FORBIDDEN' })
+      throw new ApiError('This user cannot change the scenario.', 'FORBIDDEN')
+    }
+    if (!session.scenarios.some((item) => item.id === scenarioId)) {
+      logger.warn('scenario.change_rejected', { userId, scenarioId: scenarioId || null, code: 'NOT_FOUND' })
+      throw new ApiError('That scenario is not in this exercise.', 'NOT_FOUND')
+    }
+    if (scenarioId === session.activeScenarioId) return
+    if (status === 'running' || status === 'paused') {
+      logger.warn('scenario.change_rejected', { userId, scenarioId, code: 'GAME_IN_PROGRESS' })
+      throw new ApiError('End the game before changing the scenario.', 'GAME_IN_PROGRESS')
+    }
+    const result = await requestScenarioChange({ userId, scenarioId })
     set((state) => {
-      if (!state.session?.canSelectScenario) return state
-      if (!state.session.scenarios.some((item) => item.id === id)) return state
-      return { session: { ...state.session, selectedScenarioId: id } }
-    }),
+      if (!state.session) return state
+      return {
+        session: {
+          ...state.session,
+          activeScenarioId: result.activeScenarioId,
+          selectedScenarioId: result.activeScenarioId,
+          scenarios: state.session.scenarios.map((item) => ({ ...item, active: item.id === result.activeScenarioId })),
+        },
+      }
+    })
+  },
+  changeGame: async (gameId) => {
+    const { session, status } = get()
+    if (!session) throw new ApiError('Sign in before changing the game.', 'SESSION')
+    const userId = session.profile.id
+    if (!session.canSelectGame) {
+      logger.warn('game.change_rejected', { userId, gameId: gameId || null, code: 'FORBIDDEN' })
+      throw new ApiError('This user cannot change the game.', 'FORBIDDEN')
+    }
+    const game = (session.games || []).find((item) => item.id === gameId)
+    if (!game) {
+      logger.warn('game.change_rejected', { userId, gameId: gameId || null, code: 'NOT_FOUND' })
+      throw new ApiError('That game is not in this exercise.', 'NOT_FOUND')
+    }
+    if (!game.open) {
+      logger.warn('game.change_rejected', { userId, gameId, code: 'CLOSED' })
+      throw new ApiError('That game is closed.', 'CLOSED')
+    }
+    if (gameId === session.activeGame.id) return
+    if (status === 'running' || status === 'paused') {
+      logger.warn('game.change_rejected', { userId, gameId, code: 'GAME_IN_PROGRESS' })
+      throw new ApiError('End the game before changing the game.', 'GAME_IN_PROGRESS')
+    }
+    const result = await requestGameChange({ userId, gameId })
+    set((state) => {
+      if (!state.session) return state
+      return { session: { ...state.session, activeGame: { id: result.activeGameId, name: result.name } } }
+    })
+  },
   setTheme: (themeId) =>
     set((state) => {
       const theme = state.session?.themes.find((item) => item.id === themeId)
