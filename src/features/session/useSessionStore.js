@@ -1,30 +1,83 @@
 import { create } from 'zustand'
 import dayjs from 'dayjs'
+import { resumeSession } from '../../shared/api/client'
+import { logger } from '../../shared/lib/logger'
+import { clearSessionKey, readSessionKey, writeSessionKey } from '../../shared/lib/sessionKey'
 
 const FALLBACK = '2026-10-28T06:00:00'
 
+let restoring = null
+
+function signedInState(session) {
+  return {
+    session,
+    ready: true,
+    notice: null,
+    status: 'ready',
+    epochMs: dayjs(session.clockStart || FALLBACK).valueOf(),
+    resetToken: 0,
+    phaseId: null,
+  }
+}
+
 export const useSessionStore = create((set, get) => ({
   session: null,
+  ready: false,
+  notice: null,
   status: 'ready',
   epochMs: dayjs(FALLBACK).valueOf(),
   resetToken: 0,
   phaseId: null,
-  signIn: (session) =>
-    set({
-      session,
-      status: 'ready',
-      epochMs: dayjs(session.clockStart || FALLBACK).valueOf(),
-      resetToken: 0,
-      phaseId: null,
-    }),
-  signOut: () =>
+  restore: () => {
+    if (get().ready) return Promise.resolve()
+    if (restoring) return restoring
+    restoring = (async () => {
+      const saved = readSessionKey()
+      if (!saved.userId) {
+        set({
+          ready: true,
+          session: null,
+          notice: saved.invalid ? 'The saved session is not valid.' : null,
+        })
+        return
+      }
+      try {
+        const session = await resumeSession(saved.userId)
+        set(signedInState(session))
+        logger.info('session.restored', { userId: saved.userId })
+      } catch (error) {
+        clearSessionKey()
+        set({
+          ready: true,
+          session: null,
+          notice: error?.message || 'The session could not be restored.',
+        })
+      }
+    })().finally(() => {
+      restoring = null
+    })
+    return restoring
+  },
+  signIn: (session) => {
+    const persisted = writeSessionKey(session.profile.id)
+    set(signedInState(session))
+    logger.info('auth.signed_in', { userId: session.profile.id, persisted })
+  },
+  signOut: () => {
+    const userId = get().session?.profile?.id || null
+    clearSessionKey()
+    logger.info('auth.signed_out', { userId })
     set({
       session: null,
+      ready: true,
+      notice: null,
       status: 'ready',
       epochMs: dayjs(FALLBACK).valueOf(),
       resetToken: 0,
       phaseId: null,
-    }),
+    })
+  },
+  clearNotice: () => set({ notice: null }),
   setScenario: (id) =>
     set((state) => {
       if (!state.session?.canSelectScenario) return state
