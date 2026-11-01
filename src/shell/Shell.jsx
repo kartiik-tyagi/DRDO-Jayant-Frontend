@@ -1,227 +1,95 @@
-import { useEffect } from 'react'
-import { Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
-import { AppBar, Box, Button, Chip, Paper, Stack, Toolbar, Tooltip, Typography, IconButton } from '@mui/material'
-import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
+import { useState } from 'react'
+import { Navigate, Route, Routes } from 'react-router-dom'
+import { Avatar, Box, Typography } from '@mui/material'
 import LoginPage from '../features/login/LoginPage'
-import PlansView from '../features/plans/PlansView'
-import SituationView from '../features/situation/SituationView'
+import { usePictureActions } from '../features/session/usePictureActions'
 import { useSessionStore } from '../features/session/useSessionStore'
-import { flatten } from '../shared/lib/tree'
-import { ApexTransport } from '../shared/ui/ApexTransport'
-import { CommandTree } from '../shared/ui/CommandTree'
-import { EmptyState } from '../shared/ui/EmptyState'
 import { ExerciseClock } from '../shared/ui/ExerciseClock'
+import { ExerciseControls } from '../shared/ui/ExerciseControls'
+import { FilterList } from '../shared/ui/FilterList'
 import { GameStateChip } from '../shared/ui/GameStateChip'
-import { Inspector } from '../shared/ui/Inspector'
-import { PositionBadge } from '../shared/ui/PositionBadge'
-import { LAYOUT_ID, LAYOUT_NAME } from './meta'
+import { MapStage } from '../shared/ui/MapStage'
+import { RoleOptions } from '../shared/ui/RoleOptions'
+import { ScenarioContext } from '../shared/ui/ScenarioContext'
+import { UserMenu } from '../shared/ui/UserMenu'
 
-const LINKS = [
-  { label: 'Desk', path: '/desk' },
-  { label: 'Situation', path: '/situation' },
-  { label: 'Plans', path: '/plans' },
-]
-
-function RequireSession() {
-  const session = useSessionStore((state) => state.session)
-  if (!session) return <Navigate to="/login" replace />
-  return <Outlet />
-}
-
-function GuestOnly() {
-  const session = useSessionStore((state) => state.session)
-  if (session) return <Navigate to="/" replace />
-  return <LoginPage />
-}
-
-function DeskFrame() {
-  const location = useLocation()
-  const navigate = useNavigate()
-  const session = useSessionStore((state) => state.session)
-  const signOut = useSessionStore((state) => state.signOut)
-  const fullBleed = location.pathname === '/situation'
-
-  useEffect(() => {
-    document.title = `Layout ${LAYOUT_ID} · ${LAYOUT_NAME}`
-  }, [])
+function Picture() {
+  const profile = useSessionStore((state) => state.session?.profile)
+  const canControl = useSessionStore((state) => state.session?.canControlGame)
+  const [filtersOpen, setFiltersOpen] = useState(true)
+  const [controlOpen, setControlOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const onAction = usePictureActions({
+    onFilters: () => setFiltersOpen((open) => !open),
+    onThemes: () => setMenuOpen(true),
+    onControl: () => setControlOpen((open) => !open),
+  })
 
   return (
-    <Box sx={{ height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-      <AppBar position="static" elevation={0} color="primary">
-        <Toolbar sx={{ gap: 1.5, flexWrap: 'wrap', py: 1 }}>
-          <Chip label={`Layout ${LAYOUT_ID}`} size="small" color="secondary" />
-          <Box sx={{ flex: 1, minWidth: 160 }}>
-            <Typography variant="subtitle1" noWrap>
-              {LAYOUT_NAME}
-            </Typography>
-            <Typography variant="caption" sx={{ opacity: 0.85 }} noWrap>
-              {session.scenarioName} · {session.gameName}
-            </Typography>
-          </Box>
-          <GameStateChip />
-          <ExerciseClock />
-          <Tooltip title="Sign out">
-            <IconButton
-              color="inherit"
-              aria-label="Sign out"
-              onClick={() => {
-                signOut()
-                navigate('/login')
-              }}
-            >
-              <LogoutOutlinedIcon />
-            </IconButton>
-          </Tooltip>
-        </Toolbar>
-        <Stack direction="row" spacing={1} sx={{ px: 2, pb: 1.25, overflow: 'auto' }}>
-          {LINKS.map((link) => (
-            <Button
-              key={link.path}
-              color="inherit"
-              variant={location.pathname === link.path ? 'outlined' : 'text'}
-              onClick={() => navigate(link.path)}
-            >
-              {link.label}
-            </Button>
-          ))}
-        </Stack>
-      </AppBar>
+    <Box sx={{ height: '100%', overflow: 'auto', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
       <Box
-        component="main"
         sx={{
-          flex: 1,
-          minHeight: 0,
-          overflow: fullBleed ? 'hidden' : 'auto',
-          p: fullBleed ? 0 : { xs: 1.5, sm: 2 },
+          px: { xs: 1.5, md: 2.5 },
+          py: 1.5,
+          display: 'flex',
+          gap: 2,
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          borderBottom: 1,
+          borderColor: 'divider',
         }}
       >
-        <Outlet />
+        <Avatar src={profile?.avatarUrl} alt="" variant="rounded" sx={{ width: 64, height: 64 }} />
+        <Box sx={{ minWidth: 0, flex: '1 1 220px' }}>
+          <Typography variant="overline" sx={{ letterSpacing: '0.14em' }}>
+            {profile?.service}
+          </Typography>
+          <Typography variant="h6">{profile?.title}</Typography>
+          <Typography variant="body2" color="text.secondary">
+            {profile?.role}
+          </Typography>
+        </Box>
+        <GameStateChip />
+        <ExerciseClock />
+        <UserMenu open={menuOpen} onOpenChange={setMenuOpen} />
+      </Box>
+      <Box sx={{ px: { xs: 1.5, md: 2.5 }, py: 1.25, borderBottom: 1, borderColor: 'divider', overflowX: 'auto' }}>
+        <ScenarioContext />
+      </Box>
+      <Box
+        sx={{
+          px: { xs: 1.5, md: 2.5 },
+          py: 1,
+          display: 'flex',
+          gap: 1,
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          borderBottom: 1,
+          borderColor: 'divider',
+        }}
+      >
+        <RoleOptions direction="row" onAction={onAction} />
+        {controlOpen && canControl ? <ExerciseControls /> : null}
+      </Box>
+      {filtersOpen ? (
+        <Box sx={{ px: { xs: 1.5, md: 2.5 }, py: 1.25, borderBottom: 1, borderColor: 'divider' }}>
+          <FilterList variant="chips" />
+        </Box>
+      ) : null}
+      <Box sx={{ flex: 1, minHeight: 320, display: 'flex', flexDirection: 'column' }}>
+        <MapStage />
       </Box>
     </Box>
   )
 }
 
-function AppointmentCard({ node, selected, onSelect }) {
-  return (
-    <Paper
-      component="button"
-      type="button"
-      onClick={() => onSelect(node.id)}
-      sx={{
-        textAlign: 'left',
-        p: 2,
-        width: '100%',
-        color: 'inherit',
-        font: 'inherit',
-        cursor: 'pointer',
-        border: '1px solid',
-        borderColor: selected ? 'secondary.main' : 'divider',
-      }}
-    >
-      <Typography variant="h6">{node.title}</Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-        {node.service}
-      </Typography>
-      <Chip label="Appointment" size="small" color="primary" sx={{ mt: 1.5 }} />
-    </Paper>
-  )
-}
-
-function DeskPage() {
-  const session = useSessionStore((state) => state.session)
-  const selectedId = useSessionStore((state) => state.selectedId)
-  const select = useSessionStore((state) => state.select)
-  const isApex = session?.position?.id === 'apex'
-  const root = session?.commandTree
-  const appointments = (root?.children || []).filter((node) => node.kind === 'appointment')
-  const assets = flatten(root).filter((node) => node.kind === 'asset')
-
-  if (isApex) {
-    return (
-      <Stack spacing={2}>
-        <PositionBadge position={session.position} />
-        <Typography variant="h5">Exercise control</Typography>
-        <Typography variant="body2" color="text.secondary">
-          {session.playingNote}
-        </Typography>
-        <GameStateChip />
-        <ApexTransport />
-        <CommandTree root={root} selectedId={selectedId} onSelect={select} />
-        <Inspector />
-      </Stack>
-    )
-  }
-
-  return (
-    <Stack spacing={2}>
-      <PositionBadge position={session.position} parentTitle={session.position.parentTitle} />
-      <Typography variant="body2" color="text.secondary">
-        {session.playingNote}
-      </Typography>
-      <Typography variant="h6">Below this appointment</Typography>
-      {appointments.length === 0 ? (
-        <EmptyState title="No subordinate appointments" message="This playing slice ends at this chair." />
-      ) : (
-        <Box
-          sx={{
-            display: 'grid',
-            gap: 2,
-            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', xl: 'repeat(3, 1fr)' },
-          }}
-        >
-          {appointments.map((node) => (
-            <AppointmentCard
-              key={node.id}
-              node={node}
-              selected={node.id === selectedId}
-              onSelect={select}
-            />
-          ))}
-        </Box>
-      )}
-      {assets.length > 0 ? (
-        <Box>
-          <Typography variant="overline" color="text.secondary">
-            Assets held here
-          </Typography>
-          <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap', mt: 1 }}>
-            {assets.map((asset) => (
-              <Button
-                key={asset.id}
-                variant={asset.id === selectedId ? 'contained' : 'outlined'}
-                color="inherit"
-                onClick={() => select(asset.id)}
-              >
-                {asset.title}
-              </Button>
-            ))}
-          </Stack>
-        </Box>
-      ) : null}
-      <Paper variant="outlined">
-        <Inspector />
-      </Paper>
-    </Stack>
-  )
-}
-
 export default function Shell() {
-  useEffect(() => {
-    document.title = `Layout ${LAYOUT_ID} · ${LAYOUT_NAME}`
-  }, [])
-
+  const session = useSessionStore((state) => state.session)
   return (
     <Routes>
-      <Route path="/login" element={<GuestOnly />} />
-      <Route element={<RequireSession />}>
-        <Route element={<DeskFrame />}>
-          <Route index element={<Navigate to="/desk" replace />} />
-          <Route path="desk" element={<DeskPage />} />
-          <Route path="situation" element={<SituationView />} />
-          <Route path="plans" element={<PlansView />} />
-        </Route>
-      </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="/login" element={session ? <Navigate to="/" replace /> : <LoginPage />} />
+      <Route path="/" element={session ? <Picture /> : <Navigate to="/login" replace />} />
+      <Route path="*" element={<Navigate to={session ? '/' : '/login'} replace />} />
     </Routes>
   )
 }

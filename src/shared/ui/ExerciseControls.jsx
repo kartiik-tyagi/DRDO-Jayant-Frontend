@@ -1,13 +1,15 @@
 import { Button, Stack } from '@mui/material'
 import { useSessionStore } from '../../features/session/useSessionStore'
 
-export function ApexTransport() {
+export function ExerciseControls() {
+  const canControl = useSessionStore((state) => state.session?.canControlGame)
   const status = useSessionStore((state) => state.status)
   const start = useSessionStore((state) => state.start)
   const pause = useSessionStore((state) => state.pause)
   const resume = useSessionStore((state) => state.resume)
   const restart = useSessionStore((state) => state.restart)
   const end = useSessionStore((state) => state.end)
+  if (!canControl) return null
 
   const actions = [
     { id: 'start', label: 'Start', onClick: start, disabled: status === 'running' || status === 'paused' },

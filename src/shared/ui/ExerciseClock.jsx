@@ -15,11 +15,11 @@ export function ExerciseClock() {
   }, [status, tick])
 
   return (
-    <Box sx={{ textAlign: { xs: 'left', sm: 'right' }, minWidth: 0 }}>
-      <Typography variant="caption" display="block" noWrap>
+    <Box sx={{ textAlign: { xs: 'left', sm: 'right' }, flexShrink: 0 }}>
+      <Typography variant="caption" display="block">
         Exercise time
       </Typography>
-      <Typography variant="body2" noWrap>
+      <Typography variant="body2">
         {dayjs(epochMs).format('DD MMM YYYY HH:mm:ss')}
       </Typography>
     </Box>

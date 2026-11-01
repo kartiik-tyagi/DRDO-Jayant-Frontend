@@ -1,28 +1,6 @@
-function appointment(fields, children = []) {
-  return {
-    kind: 'appointment',
-    canSignIn: true,
-    teamId: 'blue',
-    teamName: 'Blue',
-    ...fields,
-    children,
-  }
-}
-
-function asset(fields) {
-  return {
-    kind: 'asset',
-    canSignIn: false,
-    teamId: 'blue',
-    teamName: 'Blue',
-    children: [],
-    ...fields,
-  }
-}
-
-export const DEMO_PASSWORD = 'layout'
-
-export const exerciseTheme = {
+const fieldTheme = {
+  id: 'field',
+  name: 'Field',
   mode: 'dark',
   primary: '#1f6b45',
   secondary: '#d4b15a',
@@ -32,7 +10,9 @@ export const exerciseTheme = {
   borderRadius: 8,
 }
 
-export const blueTheme = {
+const nightTheme = {
+  id: 'night',
+  name: 'Night watch',
   mode: 'dark',
   primary: '#1d4e89',
   secondary: '#d4b15a',
@@ -42,188 +22,182 @@ export const blueTheme = {
   borderRadius: 8,
 }
 
-export const forceTree = appointment(
-  {
-    id: 'cosc',
-    title: 'CoSC',
-    service: 'Joint',
-    parentId: null,
-    parentTitle: null,
-    callsign: 'CoSC',
-    latitude: 28.61,
-    longitude: 77.21,
+const sandTheme = {
+  id: 'sand',
+  name: 'Sand',
+  mode: 'light',
+  primary: '#6b5424',
+  secondary: '#1f6b45',
+  backgroundDefault: '#f3efe4',
+  backgroundPaper: '#fffdf8',
+  fontFamily: '"Roboto", "Segoe UI", sans-serif',
+  borderRadius: 8,
+}
+
+export const DEMO_PASSWORD = 'layout'
+
+export const themes = [fieldTheme, nightTheme, sandTheme]
+
+export const exerciseTheme = {
+  mode: fieldTheme.mode,
+  primary: fieldTheme.primary,
+  secondary: fieldTheme.secondary,
+  backgroundDefault: fieldTheme.backgroundDefault,
+  backgroundPaper: fieldTheme.backgroundPaper,
+  fontFamily: fieldTheme.fontFamily,
+  borderRadius: fieldTheme.borderRadius,
+}
+
+const mapFilters = [
+  { id: 'countries', label: 'Countries', group: 'Base', layers: 'ne:countries', base: true, transparent: false },
+  { id: 'places', label: 'Populated places', group: 'Reference', layers: 'ne:populated_places', base: false, transparent: true },
+  { id: 'coast', label: 'Coastline', group: 'Reference', layers: 'ne:coastlines', base: false, transparent: true },
+  { id: 'boundaries', label: 'Boundaries', group: 'Reference', layers: 'ne:boundary_lines', base: false, transparent: true },
+  { id: 'disputed', label: 'Disputed areas', group: 'Reference', layers: 'ne:disputed_areas', base: false, transparent: true },
+]
+
+const grants = {
+  apex: {
+    canSelectScenario: true,
+    canControlGame: true,
+    options: [
+      { id: 'extent', label: 'Home extent' },
+      { id: 'filters', label: 'Map filters' },
+      { id: 'themes', label: 'Themes' },
+      { id: 'exercise-control', label: 'Exercise control' },
+    ],
+    filterIds: ['countries', 'places', 'coast', 'boundaries', 'disputed'],
+    defaults: { countries: true, places: true, coast: false, boundaries: false, disputed: false },
   },
-  [
-    appointment(
-      {
-        id: 'etc',
-        title: 'Eastern Theatre Commander',
-        service: 'Joint',
-        parentId: 'cosc',
-        parentTitle: 'CoSC',
-        callsign: 'E-THR',
-        latitude: 22.57,
-        longitude: 88.36,
-      },
-      [
-        appointment({
-          id: 'esc',
-          title: 'Eastern Strike Corps Commander',
-          service: 'Army',
-          parentId: 'etc',
-          parentTitle: 'Eastern Theatre Commander',
-          callsign: 'E-CORPS',
-          latitude: 26.14,
-          longitude: 91.74,
-        }),
-        appointment({
-          id: 'aoc',
-          title: 'Eastern Air Command AoC',
-          service: 'Air',
-          parentId: 'etc',
-          parentTitle: 'Eastern Theatre Commander',
-          callsign: 'E-AOC',
-          latitude: 24.82,
-          longitude: 92.79,
-        }),
-        asset({
-          id: 'east-airbase',
-          title: 'Eastern Airbase',
-          service: 'Air',
-          parentId: 'etc',
-          parentTitle: 'Eastern Theatre Commander',
-          callsign: 'E-AIR',
-          latitude: 27.05,
-          longitude: 94.02,
-        }),
-      ],
-    ),
-    appointment(
-      {
-        id: 'wtc',
-        title: 'Western Theatre Commander',
-        service: 'Joint',
-        parentId: 'cosc',
-        parentTitle: 'CoSC',
-        callsign: 'W-THR',
-        latitude: 26.91,
-        longitude: 75.79,
-      },
-      [
-        appointment({
-          id: 'foc',
-          title: 'Western Naval Command FoC',
-          service: 'Navy',
-          parentId: 'wtc',
-          parentTitle: 'Western Theatre Commander',
-          callsign: 'W-FOC',
-          latitude: 18.94,
-          longitude: 72.84,
-        }),
-        asset({
-          id: 'west-port',
-          title: 'Western Port',
-          service: 'Navy',
-          parentId: 'wtc',
-          parentTitle: 'Western Theatre Commander',
-          callsign: 'W-PORT',
-          latitude: 22.3,
-          longitude: 70.8,
-        }),
-      ],
-    ),
-    appointment({
-      id: 'ntc',
-      title: 'Northern Theatre Commander',
-      service: 'Joint',
-      parentId: 'cosc',
-      parentTitle: 'CoSC',
-      callsign: 'N-THR',
-      latitude: 32.73,
-      longitude: 74.86,
-    }),
-  ],
-)
-
-export const apexPosition = {
-  id: 'apex',
-  title: 'APEX',
-  kind: 'appointment',
-  canSignIn: true,
-  service: 'Control',
-  teamId: 'control',
-  teamName: 'Control',
-  parentId: null,
-  parentTitle: null,
-  callsign: 'APEX',
-  latitude: null,
-  longitude: null,
-  children: [],
+  direction: {
+    canSelectScenario: true,
+    canControlGame: false,
+    options: [
+      { id: 'extent', label: 'Home extent' },
+      { id: 'filters', label: 'Map filters' },
+      { id: 'themes', label: 'Themes' },
+    ],
+    filterIds: ['countries', 'places', 'coast', 'boundaries'],
+    defaults: { countries: true, places: true, coast: false, boundaries: true },
+  },
+  theatre: {
+    canSelectScenario: false,
+    canControlGame: false,
+    options: [
+      { id: 'extent', label: 'Home extent' },
+      { id: 'filters', label: 'Map filters' },
+      { id: 'themes', label: 'Themes' },
+    ],
+    filterIds: ['countries', 'places', 'coast'],
+    defaults: { countries: true, places: true, coast: false },
+  },
+  air: {
+    canSelectScenario: false,
+    canControlGame: false,
+    options: [
+      { id: 'extent', label: 'Home extent' },
+      { id: 'filters', label: 'Map filters' },
+      { id: 'themes', label: 'Themes' },
+    ],
+    filterIds: ['countries', 'places', 'coast'],
+    defaults: { countries: true, places: true, coast: false },
+  },
+  maritime: {
+    canSelectScenario: false,
+    canControlGame: false,
+    options: [
+      { id: 'extent', label: 'Home extent' },
+      { id: 'filters', label: 'Map filters' },
+      { id: 'themes', label: 'Themes' },
+    ],
+    filterIds: ['countries', 'coast', 'places'],
+    defaults: { countries: true, places: false, coast: true },
+  },
 }
 
-export const GAME_OPEN = true
+const users = [
+  { id: 'apex', title: 'APEX', role: 'Exercise control', service: 'Control', avatarUrl: '/avatars/apex.svg', themeId: 'night', grant: 'apex' },
+  { id: 'cosc', title: 'CoSC', role: 'Joint direction', service: 'Joint', avatarUrl: '/avatars/cosc.svg', themeId: 'field', grant: 'direction' },
+  { id: 'etc', title: 'Eastern Theatre Commander', role: 'Theatre picture', service: 'Joint', avatarUrl: '/avatars/east.svg', themeId: 'field', grant: 'theatre' },
+  { id: 'wtc', title: 'Western Theatre Commander', role: 'Theatre picture', service: 'Joint', avatarUrl: '/avatars/west.svg', themeId: 'night', grant: 'theatre' },
+  { id: 'ntc', title: 'Northern Theatre Commander', role: 'Theatre picture', service: 'Joint', avatarUrl: '/avatars/north.svg', themeId: 'field', grant: 'theatre' },
+  { id: 'esc', title: 'Eastern Strike Corps Commander', role: 'Corps picture', service: 'Army', avatarUrl: '/avatars/corps.svg', themeId: 'field', grant: 'theatre' },
+  { id: 'aoc', title: 'Eastern Air Command AoC', role: 'Air picture', service: 'Air', avatarUrl: '/avatars/air.svg', themeId: 'night', grant: 'air' },
+  { id: 'foc', title: 'Western Naval Command FoC', role: 'Maritime picture', service: 'Navy', avatarUrl: '/avatars/navy.svg', themeId: 'night', grant: 'maritime' },
+]
 
-function collectAppointments(node, list = []) {
-  if (node.kind === 'appointment') list.push(node)
-  for (const child of node.children || []) collectAppointments(child, list)
-  return list
+export const scenarios = [
+  { id: 'northern', name: 'Northern Approach', active: true },
+  { id: 'southern', name: 'Southern Approach', active: false },
+]
+
+export const activeGame = { id: 'alpha', name: 'Game Alpha', open: true }
+
+export const phases = [
+  { id: 'plan', label: 'Plan', filterIds: ['countries', 'boundaries', 'places'] },
+  { id: 'conduct', label: 'Conduct', filterIds: ['countries', 'places', 'coast'] },
+  { id: 'review', label: 'Review', filterIds: ['countries', 'coast', 'disputed'] },
+]
+
+export const mapView = {
+  latitude: 24.5,
+  longitude: 82,
+  zoom: 5,
+  minZoom: 3,
+  maxZoom: 12,
 }
+
+export const mapService = 'http://127.0.0.1:8080/geoserver/wms'
+
+export const clockStart = '2026-10-28T06:00:00'
+
+const activeScenario = scenarios.find((item) => item.active)
 
 export const loginContext = {
   exerciseTitle: 'Exercise Jayant',
+  systemName: 'JAYANT',
   classification: 'EXERCISE',
-  scenarioName: 'Northern Approach',
-  gameName: 'Game Alpha',
-  gameOpen: GAME_OPEN,
+  purpose: 'Situation picture',
+  accessNotice: 'Authorised users only',
+  activeScenarioName: activeScenario?.name || '',
+  activeGameName: activeGame.open ? activeGame.name : '',
+  gameOpen: activeGame.open,
   backgroundImage: '/login-background.svg',
-  passwordHint: 'Demo password: layout',
+  passwordHint: 'Exercise access: layout',
   theme: exerciseTheme,
-  positions: GAME_OPEN ? [apexPosition, ...collectAppointments(forceTree)] : [apexPosition],
+  users: users.map(({ id, title, role, service, avatarUrl }) => ({ id, title, role, service, avatarUrl })),
 }
 
-export const mapConfig = {
-  title: 'Situation',
-  view: {
-    latitude: 24.5,
-    longitude: 82,
-    zoom: 5,
-    minZoom: 3,
-    maxZoom: 18,
-  },
-  gis: {
-    name: 'Local GIS',
-    base: {
-      id: 'base-map',
-      name: 'Countries',
-      type: 'wms',
-      url: 'http://127.0.0.1:8080/geoserver/wms',
-      layers: 'ne:countries',
-      format: 'image/png',
-      transparent: false,
-      version: '1.1.1',
-      attribution: 'Local GIS server',
+export function sessionFor(userId) {
+  const user = users.find((item) => item.id === userId)
+  if (!user) return null
+  const grant = grants[user.grant]
+  const theme = themes.find((item) => item.id === user.themeId) || themes[0]
+  return {
+    profile: {
+      id: user.id,
+      title: user.title,
+      role: user.role,
+      service: user.service,
+      avatarUrl: user.avatarUrl,
     },
-    overlays: [
-      {
-        id: 'places',
-        name: 'Places',
-        type: 'wms',
-        url: 'http://127.0.0.1:8080/geoserver/wms',
-        layers: 'ne:populated_places',
-        format: 'image/png',
-        transparent: true,
-        version: '1.1.1',
-        visible: true,
-        attribution: 'Local GIS server',
-      },
-    ],
-  },
-  sides: {
-    blue: '#2f6fed',
-    control: '#d4b15a',
-    neutral: '#c2b280',
-  },
+    theme,
+    themes,
+    scenarios,
+    selectedScenarioId: activeScenario?.id || scenarios[0].id,
+    activeScenarioId: activeScenario?.id || scenarios[0].id,
+    activeGame: { id: activeGame.id, name: activeGame.name },
+    options: grant.options,
+    filters: mapFilters
+      .filter((filter) => grant.filterIds.includes(filter.id))
+      .map((filter) => ({ ...filter, visible: Boolean(grant.defaults[filter.id]) })),
+    phases,
+    canSelectScenario: grant.canSelectScenario,
+    canControlGame: grant.canControlGame,
+    mapView,
+    mapService,
+    clockStart,
+    exerciseTitle: loginContext.exerciseTitle,
+    classification: loginContext.classification,
+  }
 }
-
-export const PLAYING_NOTE =
-  'Playing order of battle for Game Alpha, taken from the Blue standard order of battle.'

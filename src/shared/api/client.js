@@ -1,14 +1,5 @@
 import { z } from 'zod'
-import { findNode } from '../lib/tree'
-import {
-  DEMO_PASSWORD,
-  PLAYING_NOTE,
-  blueTheme,
-  exerciseTheme,
-  forceTree,
-  loginContext,
-  mapConfig,
-} from './fixtures'
+import { DEMO_PASSWORD, loginContext, sessionFor } from './fixtures'
 
 const wait = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms))
 
@@ -30,35 +21,76 @@ const themeSchema = z.object({
   borderRadius: z.number(),
 })
 
-const positionSchema = z
-  .object({
-    id: z.string(),
-    title: z.string(),
-    kind: z.enum(['appointment', 'asset']),
-    service: z.string(),
-    teamId: z.string(),
-    teamName: z.string(),
-  })
-  .passthrough()
+const namedThemeSchema = themeSchema.extend({
+  id: z.string(),
+  name: z.string(),
+})
+
+const userSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  role: z.string(),
+  service: z.string(),
+  avatarUrl: z.string(),
+})
+
+const filterSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  group: z.string(),
+  layers: z.string(),
+  base: z.boolean(),
+  transparent: z.boolean(),
+  visible: z.boolean(),
+})
 
 const loginContextSchema = z.object({
   exerciseTitle: z.string(),
+  systemName: z.string(),
   classification: z.string(),
-  scenarioName: z.string(),
-  gameName: z.string(),
+  purpose: z.string(),
+  accessNotice: z.string(),
+  activeScenarioName: z.string(),
+  activeGameName: z.string(),
   gameOpen: z.boolean(),
   backgroundImage: z.string(),
   passwordHint: z.string(),
   theme: themeSchema,
-  positions: z.array(positionSchema).min(1),
+  users: z.array(userSchema).min(1),
+})
+
+const sessionSchema = z.object({
+  profile: userSchema,
+  theme: namedThemeSchema,
+  themes: z.array(namedThemeSchema).min(1),
+  scenarios: z.array(z.object({ id: z.string(), name: z.string(), active: z.boolean() })).min(1),
+  selectedScenarioId: z.string(),
+  activeScenarioId: z.string(),
+  activeGame: z.object({ id: z.string(), name: z.string() }),
+  options: z.array(z.object({ id: z.string(), label: z.string() })).min(1),
+  filters: z.array(filterSchema).min(1),
+  phases: z.array(z.object({ id: z.string(), label: z.string(), filterIds: z.array(z.string()) })),
+  canSelectScenario: z.boolean(),
+  canControlGame: z.boolean(),
+  mapView: z.object({
+    latitude: z.number(),
+    longitude: z.number(),
+    zoom: z.number(),
+    minZoom: z.number(),
+    maxZoom: z.number(),
+  }),
+  mapService: z.string(),
+  clockStart: z.string(),
+  exerciseTitle: z.string(),
+  classification: z.string(),
 })
 
 function readContext() {
   const parsed = loginContextSchema.safeParse(loginContext)
-  if (!parsed.success) {
-    throw new ApiError('The exercise directory could not be read.', 'VALIDATION')
-  }
-  return parsed.data
+  if (!parsed.success) throw new ApiError('The exercise directory could not be read.', 'VALIDATION')
+  const data = parsed.data
+  if (data.gameOpen) return data
+  return { ...data, users: data.users.filter((user) => user.id === 'apex') }
 }
 
 export async function getLoginContext() {
@@ -66,27 +98,18 @@ export async function getLoginContext() {
   return readContext()
 }
 
-export async function login({ positionId, password }) {
+export async function login({ userId, password }) {
   await wait(220)
   const context = readContext()
-  if (!password) throw new ApiError('Enter the password.', 'VALIDATION')
-  if (password !== DEMO_PASSWORD) throw new ApiError('The password is not recognised.', 'VALIDATION')
-  const position = context.positions.find((item) => item.id === positionId)
-  if (!position) throw new ApiError('Choose a position that is in the open game.', 'VALIDATION')
-  if (!context.gameOpen && position.id !== 'apex') {
-    throw new ApiError('No game is open. Only APEX can sign in.', 'NOT_ACTIVE_GAME')
+  if (!password) throw new ApiError('Enter the access password.', 'VALIDATION')
+  if (password !== DEMO_PASSWORD) throw new ApiError('Access refused.', 'VALIDATION')
+  const user = context.users.find((item) => item.id === userId)
+  if (!user) throw new ApiError('Select a user.', 'VALIDATION')
+  if (!context.gameOpen && user.id !== 'apex') {
+    throw new ApiError('No game is active. Only APEX may sign in.', 'NOT_ACTIVE_GAME')
   }
-  const commandTree = position.id === 'apex' ? forceTree : findNode(forceTree, position.id)
-  if (!commandTree) throw new ApiError('This position has no playing command.', 'VALIDATION')
-  return {
-    position,
-    theme: position.teamId === 'blue' ? blueTheme : exerciseTheme,
-    exerciseTitle: context.exerciseTitle,
-    classification: context.classification,
-    scenarioName: context.scenarioName,
-    gameName: context.gameName,
-    playingNote: PLAYING_NOTE,
-    commandTree,
-    mapConfig,
-  }
+  const session = sessionFor(user.id)
+  const parsed = sessionSchema.safeParse(session)
+  if (!parsed.success) throw new ApiError('The user profile could not be read.', 'VALIDATION')
+  return parsed.data
 }
