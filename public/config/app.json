@@ -1,0 +1,8 @@
+{
+  "title": "DRDO Jayant",
+  "shortTitle": "JY",
+  "subtitle": "War game simulation",
+  "exerciseName": "Exercise Jayant",
+  "version": "1.0.0",
+  "defaultRoute": "/situation"
+}

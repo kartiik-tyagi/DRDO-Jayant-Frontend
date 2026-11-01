@@ -1,0 +1,16 @@
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+.force-marker {
+  background: transparent;
+  border: none;
+}
+
+.leaflet-container {
+  background: #102018;
+  font-family: "Roboto", "Segoe UI", sans-serif;
+}
