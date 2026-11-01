@@ -18,18 +18,14 @@ export function FilterList({ variant = 'list' }) {
 
   return (
     <Stack spacing={1.5}>
-      <Box>
+      <Stack spacing={0.25}>
         <Typography variant="overline">Map filters</Typography>
-        <Typography variant="caption" display="block" color="text.secondary">
+        <Typography variant="caption" color="text.secondary">
           Released to this role.
         </Typography>
-        <Typography variant="caption" display="block">
-          Shown: {summary(filters, true)}
-        </Typography>
-        <Typography variant="caption" display="block">
-          Not shown: {summary(filters, false)}
-        </Typography>
-      </Box>
+        <Typography variant="caption">Shown: {summary(filters, true)}</Typography>
+        <Typography variant="caption">Not shown: {summary(filters, false)}</Typography>
+      </Stack>
       {variant === 'chips' ? (
         <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
           {filters.map((filter) => (
