@@ -5,6 +5,13 @@ import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined'
 import { useNavigation } from '../../features/directory/useNavigation'
 import { NavIcon } from './navIcons'
 
+const GROUP_ICON = {
+  map: 'layers',
+  plan: 'plan',
+  game: 'control',
+  admin: 'settings',
+}
+
 export function ShowMapTools({ onClick, pressed = false }) {
   return (
     <Tooltip title={pressed ? 'Hide map tools' : 'Show map tools'}>
@@ -51,7 +58,7 @@ export function MapToolbar({ orientation = 'horizontal', activeId, onSelect, onH
         flexDirection: vertical ? 'column' : 'row',
         alignItems: vertical ? 'stretch' : 'center',
         flexShrink: 0,
-        width: vertical ? 72 : 'auto',
+        width: vertical ? 48 : 'auto',
         height: vertical ? '100%' : 'auto',
         minHeight: vertical ? 0 : 40,
         overflow: 'auto',
@@ -85,24 +92,30 @@ export function MapToolbar({ orientation = 'horizontal', activeId, onSelect, onH
             }}
           >
             {index > 0 ? <Divider orientation={vertical ? 'horizontal' : 'vertical'} flexItem sx={{ mx: vertical ? 0.5 : 0.25, my: vertical ? 0.25 : 0.75 }} /> : null}
-            <Button
-              size="small"
-              aria-expanded={open}
-              onClick={() => toggle(group.id)}
-              sx={{
-                flexShrink: 0,
-                textTransform: 'none',
-                minWidth: 0,
-                px: 0.75,
-                whiteSpace: 'normal',
-                fontSize: vertical ? 11 : undefined,
-                color: open ? 'text.primary' : 'text.secondary',
-                justifyContent: vertical ? 'center' : 'flex-start',
-                lineHeight: 1.2,
-              }}
-            >
-              {group.label}
-            </Button>
+            {vertical ? (
+              <Tooltip title={group.label} placement="right">
+                <IconButton size="small" aria-label={group.label} aria-expanded={open} color={open ? 'primary' : 'default'} onClick={() => toggle(group.id)}>
+                  <NavIcon name={GROUP_ICON[group.id] || group.items[0]?.icon || 'layers'} />
+                </IconButton>
+              </Tooltip>
+            ) : (
+              <Button
+                size="small"
+                aria-expanded={open}
+                onClick={() => toggle(group.id)}
+                sx={{
+                  flexShrink: 0,
+                  textTransform: 'none',
+                  minWidth: 0,
+                  px: 0.75,
+                  color: open ? 'text.primary' : 'text.secondary',
+                  justifyContent: 'flex-start',
+                  lineHeight: 1.2,
+                }}
+              >
+                {group.label}
+              </Button>
+            )}
             {open
               ? group.items.map((item) => (
                   <ToolButton key={item.id} item={item} selected={activeId === item.id} onSelect={onSelect} placement={placement} />
