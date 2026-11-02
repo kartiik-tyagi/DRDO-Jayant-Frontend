@@ -36,7 +36,18 @@ function Picture() {
   const { sections, sectionId, select } = useSections()
 
   const sectionsNav = (
-    <Box component="nav" aria-label="Exercise sections" sx={{ display: 'flex', flexDirection: stacked ? 'row' : 'column', gap: 0.5, overflowX: stacked ? 'auto' : 'visible' }}>
+    <Box
+      component="nav"
+      aria-label="Exercise sections"
+      sx={{
+        display: 'flex',
+        flexDirection: stacked ? 'row' : 'column',
+        gap: 0.5,
+        width: stacked ? '100%' : 'auto',
+        minWidth: 0,
+        overflowX: stacked ? 'auto' : 'visible',
+      }}
+    >
       {sections.map((section) => {
         const selected = section.id === sectionId
         return (
@@ -47,6 +58,7 @@ function Picture() {
             sx={{
               flexShrink: 0,
               justifyContent: 'flex-start',
+              whiteSpace: 'nowrap',
               minHeight: 40,
               px: 1.5,
               borderRadius: 0,
@@ -103,14 +115,14 @@ function Picture() {
       </Box>
 
       {stacked ? (
-        <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-          <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', px: 1.5, py: 1, flexShrink: 0, bgcolor: 'background.paper' }}>
+        <Box sx={{ flex: 1, minHeight: 0, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+          <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', px: 1.5, py: 1, flexShrink: 0, minWidth: 0, bgcolor: 'background.paper' }}>
             {phases.map((phase) => (
               <PhaseButton key={phase.id} phase={phase} selected={phase.id === phaseId} onSelect={applyPhase} />
             ))}
           </Box>
           <MapStage readout="none" />
-          <Box sx={{ flexShrink: 0, px: 1, py: 0.5, borderTop: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
+          <Box sx={{ flexShrink: 0, minWidth: 0, px: 1, py: 0.5, borderTop: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
             {sectionsNav}
           </Box>
         </Box>
