@@ -2,19 +2,19 @@
 
 ## Chrome pieces
 
-Each shell builds its own header from `ScenarioContext`, `GameStateChip`, `ExerciseClock`, and `UserMenu`. The section list is `useSections()`, not the tool menu.
+Every shell uses `TopBar` and `ContextStrip` for the exercise: wordmark, scenario, game, status, clock, and the signed-in user. `ApplicationMenu` is the application menu (scenario management, game, standard data, user management). `MapToolbar` is the picture tools. `ToolDock` shows the tool that was chosen. `StatusFooter` is the readout.
 
-`StatusBadge` shows Live, Offline, or Replay when `flags.statusBadge` is on. Replay wins over Live. Demo shows when the flag `demoMode` is on, or, before the directory loads, when `session.demoMode` is true. The locked frames do not put that badge, or a team list, in a strip under the map.
+`StatusBadge` shows Live, Offline, or Replay when `flags.statusBadge` is on. Replay wins over Live. Demo shows when the flag `demoMode` is on, or, before the directory loads, when `session.demoMode` is true. It sits in the command bar. The frames do not put a team list under the map.
 
-`IconRail`, `IconStrip`, and `ToolPanel` are still in `src/shared/ui/`. The four shells do not mount them. A section click does not open a panel.
+`IconRail` and `IconStrip` are still in `src/shared/ui/`. The shells do not mount them. A section click does not open a panel. A map tool does.
 
 `ConfirmDialog` is the shared yes/no. Scenario and game confirmation use their own dialog in `ScenarioContext.jsx` because that flow must keep the old value selected until confirm.
 
 ## Map stage
 
-`MapStage` reads filters from the session and opacity from the directory. Layer names and the GeoServer address come from the dummy API (`fixtures.js` and `directory.js` settings), not from the map component. When the basemap source is `osm`, base filters are hidden and `MapWorkbench` inserts the tile URL from `settings.osmUrl`. When the source is `wms`, `serviceUrl` is the directory GeoServer address, or the session default. The locked shells pass `readout="none"`, so there is no status strip under the map.
+`MapStage` reads filters from the session and opacity from the directory. Layer names and the GeoServer address come from the dummy API (`fixtures.js` and `directory.js` settings), not from the map component. When the basemap source is `osm`, base filters are hidden and `MapWorkbench` inserts the tile URL from `settings.osmUrl`. When the source is `wms`, `serviceUrl` is the directory GeoServer address, or the session default. The shells pass `readout="none"` and `onReadout`. `StatusFooter` then shows latitude, longitude, height, scale, zoom, and the two CRS names. Height stays blank: this picture has no elevation. Scale is the view resolution at 96 dpi. The cursor is EPSG:4326. The map is EPSG:3857.
 
-`readout="bar"` is a 32px strip under the map. `readout="overlay"` is a small paper at the bottom left. Both show latitude, longitude, EPSG:3857, and zoom.
+`readout="bar"` is a 32px strip under the map. `readout="overlay"` is a small paper at the bottom left. `PictureWorkspace` still uses those. The shells do not.
 
 Changing the GeoServer URL changes `serviceUrl`, which recreates the map. That is intentional.
 
@@ -105,4 +105,4 @@ Primary colours that pass contrast:
 5. Keep. The feature appears in the table and on the map.
 6. Cancel discards the geometry. Nothing is stored.
 
-Routes and zones are the same with a line or a ring. Planning shapes work after “Show the planning board” or, on layout-2, the Board button, or, on layout-4, the Plan phase.
+Routes and zones are the same with a line or a ring. Planning shapes work after opening Planning board in the Plan group of the map toolbar.

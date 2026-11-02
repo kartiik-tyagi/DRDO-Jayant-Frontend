@@ -76,13 +76,13 @@ Do not catch an API error and ignore it with no toast, unless the store already 
 
 ## Navigation
 
-The layout reads `session.sections` through `useSections()`. Those four entries come from `fixtures.js`: Scenario, Game, Data management, User management. Choosing one marks it. It does not open a page. Map filters, drawing, and the other facilities are not items in that list.
+The application menu reads `session.sections` through `useSections()`. Those four entries come from `fixtures.js`: Scenario management, Game, Standard data, User management. Choosing one marks it. It does not open a page.
 
-`session.navigation` and `useNavigation()` still describe the older tool menu. The locked shells do not render it.
+Map tools read `useNavigation()`. Filters, drawing, and the other picture facilities live there, in separate groups (Map, Plan, Game, Administration). A group stays closed until it is asked for. Choosing a tool opens `ToolPanel`. Choosing Home extent recentres the map and does not open a panel.
 
 ## Layouts
 
-Each branch’s `Shell.jsx` is a different frame around `MapStage`. They do not share a variant prop. Layout 1 is an index beside the picture. Layout 2 is a full-bleed picture with a bottom command deck. Layout 3 is a masthead and a chapter row. Layout 4 is a phase script beside the picture. See [Run and branches](01-run-and-branches.md).
+Each branch’s `Shell.jsx` composes the same pieces in a different place: command bar, application menu, map toolbar, tool dock, map, and the readout footer. See [Run and branches](01-run-and-branches.md). No shell shows Plan, Conduct, or Review.
 
 ## Stable empty values
 

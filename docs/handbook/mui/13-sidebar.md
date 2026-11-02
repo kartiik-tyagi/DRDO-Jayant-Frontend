@@ -104,7 +104,7 @@ On a phone the hamburger in the navbar sets `mobileOpen`. Selecting an item shou
 
 ## Rail
 
-A rail is a permanent column of icons, about 72px, with `aria-label` on each `IconButton` and `aria-pressed` when that tool is open. Labels can sit under the icon as `Typography variant="caption"`, or appear in a `Tooltip`. `IconRail` and `IconStrip` are in this repo and are not mounted by the locked shells. The exercise index reads `session.sections`.
+A rail is a permanent column of icons, about 72px, with `aria-label` on each `IconButton` and `aria-pressed` when that tool is open. Labels can sit under the icon as `Typography variant="caption"`, or appear in a `Tooltip`. `IconRail` and `IconStrip` are in this repo and are not mounted. The shells use `ApplicationMenu` for `session.sections` and `MapToolbar` for the picture tools.
 
 ## Scroll
 

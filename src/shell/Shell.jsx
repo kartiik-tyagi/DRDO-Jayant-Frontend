@@ -1,73 +1,61 @@
+import { useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Button, useMediaQuery } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import LoginPage from '../features/login/LoginPage'
-import { useSections } from '../features/session/useSections'
+import { useChrome } from '../features/session/useChrome'
 import { useSessionStore } from '../features/session/useSessionStore'
-import { ExerciseClock } from '../shared/ui/ExerciseClock'
-import { GameStateChip } from '../shared/ui/GameStateChip'
+import { ApplicationMenu } from '../shared/ui/ApplicationMenu'
+import { MapToolbar, ShowMapTools } from '../shared/ui/MapToolbar'
 import { MapStage } from '../shared/ui/MapStage'
-import { ScenarioContext } from '../shared/ui/ScenarioContext'
-import { UserMenu } from '../shared/ui/UserMenu'
+import { StatusFooter } from '../shared/ui/StatusFooter'
+import { ToolDock } from '../shared/ui/ToolDock'
+import { ContextStrip, TopBar } from '../shared/ui/TopBar'
 
-function Picture() {
-  const session = useSessionStore((state) => state.session)
-  const { sections, sectionId, select } = useSections()
+function Frame() {
+  const theme = useTheme()
+  const stacked = useMediaQuery(theme.breakpoints.down('md'))
+  const { panel, closePanel, select } = useChrome()
+  const [toolsOpen, setToolsOpen] = useState(true)
+  const [menuOpen, setMenuOpen] = useState(true)
+  const [menuExpanded, setMenuExpanded] = useState(false)
+  const [readout, setReadout] = useState(null)
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0, bgcolor: 'background.default', color: 'text.primary' }}>
-      <Box
-        component="header"
-        sx={{ flexShrink: 0, px: { xs: 2, md: 3 }, pt: 2, bgcolor: 'background.paper', borderBottom: 1, borderColor: 'divider' }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
-          <Box sx={{ minWidth: 0 }}>
-            <Typography variant="h5" sx={{ letterSpacing: '0.14em', lineHeight: 1.1 }}>
-              JAYANT
-            </Typography>
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-              {session?.exerciseTitle} · {session?.classification}
-            </Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexShrink: 0 }}>
-            <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 1.5 }}>
-              <GameStateChip />
-              <ExerciseClock />
-            </Box>
-            <UserMenu />
-          </Box>
+    <Box sx={{ height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column', bgcolor: 'background.default', color: 'text.primary' }}>
+      <TopBar
+        leading={toolsOpen ? null : <ShowMapTools onClick={() => setToolsOpen(true)} />}
+        trailing={
+          menuOpen ? null : (
+            <Button size="small" onClick={() => setMenuOpen(true)} sx={{ textTransform: 'none', color: 'text.primary', flexShrink: 0 }}>
+              Application
+            </Button>
+          )
+        }
+      />
+      <ContextStrip />
+      {stacked && toolsOpen ? <MapToolbar activeId={panel} onSelect={select} onHide={() => setToolsOpen(false)} /> : null}
+      {stacked && menuOpen ? <ApplicationMenu presentation="icons" onHide={() => setMenuOpen(false)} /> : null}
+      <Box sx={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex' }}>
+        {!stacked && toolsOpen ? (
+          <MapToolbar orientation="vertical" activeId={panel} onSelect={select} onHide={() => setToolsOpen(false)} />
+        ) : null}
+        <Box sx={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
+          {!stacked ? <ToolDock panel={panel} onClose={closePanel} edge="start" /> : null}
+          <MapStage readout="none" onReadout={setReadout} />
+          {stacked ? <ToolDock panel={panel} onClose={closePanel} edge="end" /> : null}
         </Box>
-        <Box
-          component="nav"
-          aria-label="Chapters"
-          sx={{ display: 'flex', gap: { xs: 0.5, sm: 1 }, mt: 2, overflowX: 'auto' }}
-        >
-          {sections.map((section) => {
-            const selected = section.id === sectionId
-            return (
-              <Button
-                key={section.id}
-                aria-pressed={selected}
-                onClick={() => select(section.id)}
-                sx={{
-                  flexShrink: 0,
-                  borderRadius: 0,
-                  px: 1.5,
-                  minHeight: 44,
-                  color: selected ? 'text.primary' : 'text.secondary',
-                  borderBottom: 2,
-                  borderColor: selected ? 'primary.main' : 'transparent',
-                }}
-              >
-                {section.label}
-              </Button>
-            )
-          })}
-        </Box>
-        <Box sx={{ py: 1, overflowX: 'auto' }}>
-          <ScenarioContext />
-        </Box>
+        {!stacked && menuOpen ? (
+          <ApplicationMenu
+            presentation="rail"
+            edge="end"
+            expanded={menuExpanded}
+            onExpandedChange={setMenuExpanded}
+            onHide={() => setMenuOpen(false)}
+          />
+        ) : null}
       </Box>
-      <MapStage readout="none" />
+      <StatusFooter readout={readout} />
     </Box>
   )
 }
@@ -77,7 +65,7 @@ export default function Shell() {
   return (
     <Routes>
       <Route path="/login" element={session ? <Navigate to="/" replace /> : <LoginPage />} />
-      <Route path="/" element={session ? <Picture /> : <Navigate to="/login" replace />} />
+      <Route path="/" element={session ? <Frame /> : <Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to={session ? '/' : '/login'} replace />} />
     </Routes>
   )

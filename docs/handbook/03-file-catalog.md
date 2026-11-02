@@ -25,10 +25,10 @@ Every file under `src/` that the app loads. Paths are from the project root. “
 
 | Branch | Frame |
 | --- | --- |
-| layout-1 | Left exercise index, map fills the remainder |
-| layout-2 | Full-bleed map, floating identity, bottom command deck |
-| layout-3 | Masthead, chapter row, map |
-| layout-4 | Map, with the phase script in a column |
+| layout-1 | Workstation. Application rail on the left, map-tool shelf, tool dock on the right |
+| layout-2 | Menu shelf. Application menu in the command bar, map-tool shelf under it |
+| layout-3 | Dual rail. Map tools on the left, application menu on the right |
+| layout-4 | Command band. Named application band, map tools on request |
 
 ## Login and session
 
@@ -67,7 +67,11 @@ Every file under `src/` that the app loads. Paths are from the project root. “
 | --- | --- |
 | `src/components/SituationMap.jsx` | OpenLayers map, GeoServer WMS tiles, pointer, zoom, home animation. Calls `onMap`. |
 | `src/components/MapWorkbench.jsx` | Vector features, draw, edit, select, measure, OSM basemap, saved view. Renders `null`. |
-| `src/shared/ui/MapStage.jsx` | Combines the base map, the workbench, the measure chip, and the coordinate readout. |
+| `src/shared/ui/MapStage.jsx` | Combines the base map, the workbench, and the measure chip. Reports cursor and view to the footer. |
+| `src/shared/ui/StatusFooter.jsx` | Latitude, longitude, height, scale, zoom, and CRS. |
+| `src/shared/ui/ApplicationMenu.jsx` | Application sections as a rail, a band, an icon row, or a menu. |
+| `src/shared/ui/MapToolbar.jsx` | Map, plan, game, and administration tools. Each group opens on its own. |
+| `src/shared/ui/ToolDock.jsx` | Holds `ToolPanel` beside the map, or under it on a narrow screen. |
 | `src/shared/ui/PictureWorkspace.jsx` | `dock` / `overlay` / `plain` / `phase` around `MapStage`. |
 
 ## Chrome components

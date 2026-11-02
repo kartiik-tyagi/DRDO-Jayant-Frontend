@@ -1,2 +1,2 @@
 export const LAYOUT_ID = '3'
-export const LAYOUT_NAME = 'Chapter masthead'
+export const LAYOUT_NAME = 'Dual rail'
