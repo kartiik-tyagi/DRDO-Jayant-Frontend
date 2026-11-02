@@ -20,17 +20,15 @@ Every file under `src/` that the app loads. Paths are from the project root. “
 
 | File | Purpose |
 | --- | --- |
-| `src/shell/Shell.jsx` | Routes `/login` and `/`. Composes the chrome and `<PictureWorkspace variant="..." />`. |
+| `src/shell/Shell.jsx` | Routes `/login` and `/`. The frame for this branch. |
 | `src/shell/meta.js` | `LAYOUT_ID` and `LAYOUT_NAME`. Not imported. A label for humans. |
 
-`Shell.jsx` variants:
-
-| Branch | Variant |
+| Branch | Frame |
 | --- | --- |
-| layout-1 | `dock` |
-| layout-2 | `overlay` (phone column and desktop full-bleed both use it) |
-| layout-3 | `plain` |
-| layout-4 | `phase` |
+| layout-1 | Left exercise index, map fills the remainder |
+| layout-2 | Full-bleed map, floating identity, bottom command deck |
+| layout-3 | Masthead, chapter row, map |
+| layout-4 | Map, with the phase script in a column |
 
 ## Login and session
 
@@ -38,6 +36,7 @@ Every file under `src/` that the app loads. Paths are from the project root. “
 | --- | --- |
 | `src/features/login/LoginPage.jsx` | Floating form over `public/login-background.png`. Position select, password, sign in. |
 | `src/features/session/useSessionStore.js` | Sign-in, restore, sign-out, scenario, game, theme, filters, phases, clock, `seek`. |
+| `src/features/session/useSections.js` | The four layout sections from `session.sections`. Selection does not open a page. |
 | `src/features/session/useChrome.js` | Which panel is open, whether the rail is expanded, the user menu. Not persisted. |
 | `src/shared/lib/sessionKey.js` | Read and write `jayant.session` and `jayant.exercise`. |
 | `src/shared/lib/logger.js` | `info`, `warn`, `error`. |

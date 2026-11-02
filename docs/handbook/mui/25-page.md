@@ -1,6 +1,6 @@
 # A whole page
 
-Navbar, sidebar, content, and footer in one column that fills the viewport. This is the shape of a shell. The map layouts already do it with `TopBar`, `IconRail`, and `MapStage`. Copy the structure when you add a page that is not the picture. Keep the picture’s shell as it is.
+Navbar, sidebar, content, and footer in one column that fills the viewport. This is a general page shape. Jayant’s four shells do not all use it. Layout 1 is an index beside the map. Layout 2 floats a deck on the picture. Layout 3 is a masthead. Layout 4 is a phase script. Copy a shell only when you mean that frame.
 
 ```jsx
 import { useState } from 'react'

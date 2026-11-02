@@ -68,10 +68,10 @@ The same product is checked out as four local git branches. Shared code is the s
 
 | Branch | `src/shell/meta.js` | What the person sees |
 | --- | --- | --- |
-| `layout-1` | GIS workstation | Left icon rail. A 300px tool panel. Feature table docked under the map on a wide screen. |
-| `layout-2` | Operating picture | Map full-bleed. Floating top bar and rail. A Picture / Board button on the map. |
-| `layout-3` | Icon menus | Icon strip. The tool opens in a popover under the icon you clicked. |
-| `layout-4` | Phase picture | Plan / Conduct / Review across the top. Icon rail on the right. |
+| `layout-1` | Exercise index | A full-height text index on the left: Scenario, Game, Data management, User management. The map fills the rest. On a phone the index is a horizontal row. |
+| `layout-2` | Picture console | The map is the whole window. Identity floats on it. The four sections are a command deck along the bottom, not a column. |
+| `layout-3` | Chapter masthead | No side column. A title band, then the four sections as chapters in a row, then the map. |
+| `layout-4` | Phase script | Plan, Conduct, and Review are the large control, stacked beside the map. The four sections sit under that script. |
 
 Files that **must stay different** per branch:
 

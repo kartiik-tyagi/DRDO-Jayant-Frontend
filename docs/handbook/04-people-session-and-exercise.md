@@ -109,7 +109,7 @@ APEX transport, all no-ops for anyone else:
 
 ## Phases
 
-Only layout-4 shows Plan / Conduct / Review. `applyPhase` sets `phaseId` and turns filters on or off from the phase’s `filterIds`.
+Only layout-4 shows Plan, Conduct, and Review, as the script beside the map. Choosing one calls `applyPhase`, which sets `phaseId` and turns filters on or off from that phase’s `filterIds`. Nothing is selected until a phase is chosen.
 
 | Phase | Layers forced on |
 | --- | --- |
@@ -117,14 +117,4 @@ Only layout-4 shows Plan / Conduct / Review. `applyPhase` sets `phaseId` and tur
 | conduct | countries, places, coast |
 | review | countries, coast, disputed |
 
-Layout-4 applies Conduct once when the picture mounts. Choosing a filter by hand clears `phaseId` so the toggle group does not claim a phase the filters no longer match.
-
-`PictureWorkspace` variant `phase` follows `phaseId`:
-
-| Phase | Workspace |
-| --- | --- |
-| plan | Planning board (`surface` becomes `planning`) |
-| conduct | Alert strip under the top chrome, when the alerts flag is on |
-| review | Feature table docked under the map on a wide screen |
-
-Phone widths do not dock the table. The Features tool in the menu still opens it.
+Choosing a filter by hand clears `phaseId`. The phase script then shows no selected phase, because the filters no longer match one. The layout does not dock a feature table or an alert strip under the map.

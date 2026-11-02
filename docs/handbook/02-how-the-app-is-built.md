@@ -76,15 +76,13 @@ Do not catch an API error and ignore it with no toast, unless the store already 
 
 ## Navigation
 
-`session.navigation` is the small menu from `fixtures.js` (filters, home, resources, plans, and exercise control for APEX). It shows only until the directory snapshot arrives.
+The layout reads `session.sections` through `useSections()`. Those four entries come from `fixtures.js`: Scenario, Game, Data management, User management. Choosing one marks it. It does not open a page. Map filters, drawing, and the other facilities are not items in that list.
 
-`useNavigation()` prefers `data.navigation` from the snapshot. That menu is rebuilt from feature flags and the person’s grant. `IconRail` and `IconStrip` must use `useNavigation()`. If they read `session.navigation` directly, new tools never appear.
+`session.navigation` and `useNavigation()` still describe the older tool menu. The locked shells do not render it.
 
-`useChrome().select(id)` toggles the open panel. The id `extent` does not open a panel. It increments `resetToken`, and the map animates home.
+## Layouts
 
-## Layouts only choose a variant
-
-`PictureWorkspace` accepts `dock`, `overlay`, `plain`, or `phase`. The shell picks one. Tool bodies are `PanelBody` in `src/shared/ui/workbench/Panels.jsx`. A new tool is added once, in the API navigation and in `PanelBody`, and all four layouts show it inside their own chrome.
+Each branch’s `Shell.jsx` is a different frame around `MapStage`. They do not share a variant prop. Layout 1 is an index beside the picture. Layout 2 is a full-bleed picture with a bottom command deck. Layout 3 is a masthead and a chapter row. Layout 4 is a phase script beside the picture. See [Run and branches](01-run-and-branches.md).
 
 ## Stable empty values
 
