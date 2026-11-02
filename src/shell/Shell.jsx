@@ -17,16 +17,11 @@ function PhaseButton({ phase, selected, onSelect }) {
       variant={selected ? 'contained' : 'outlined'}
       onClick={() => onSelect(phase.id)}
       aria-pressed={selected}
-      sx={{ minHeight: 72, justifyContent: 'flex-start', px: 2, flexShrink: 0 }}
+      sx={{ minHeight: 64, justifyContent: 'flex-start', px: 2, flexShrink: 0 }}
     >
-      <Box sx={{ textAlign: 'left' }}>
-        <Typography variant="caption" sx={{ display: 'block', color: 'inherit', opacity: 0.8, lineHeight: 1.2 }}>
-          Phase
-        </Typography>
-        <Typography variant="subtitle1" sx={{ color: 'inherit', lineHeight: 1.2 }}>
-          {phase.label}
-        </Typography>
-      </Box>
+      <Typography variant="subtitle1" sx={{ color: 'inherit', lineHeight: 1.2 }}>
+        {phase.label}
+      </Typography>
     </Button>
   )
 }
