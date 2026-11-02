@@ -6,6 +6,7 @@ import {
   changePassword as writePassword,
   listDirectoryUsers,
   mapService,
+  osmService,
   removeDirectoryUser,
   updateDirectoryUser,
 } from './fixtures'
@@ -118,6 +119,7 @@ let stream = { status: 'offline', enabled: false, wsUrl: 'ws://127.0.0.1:8080/ws
 let settings = {
   source: 'wms',
   geoserverUrl: mapService,
+  osmUrl: osmService,
   wmsLayer: 'ne:countries',
   defaultZoom: 5,
   homeToken: 0,

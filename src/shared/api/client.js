@@ -79,6 +79,7 @@ const sessionSchema = z.object({
       }),
     )
     .min(1),
+  sections: z.array(z.object({ id: z.string(), kicker: z.string(), label: z.string() })).min(1),
   resources: z.array(z.object({ id: z.string(), name: z.string(), detail: z.string(), status: z.string() })),
   plans: z.array(z.object({ id: z.string(), name: z.string(), detail: z.string(), status: z.string() })),
   filters: z.array(filterSchema).min(1),
