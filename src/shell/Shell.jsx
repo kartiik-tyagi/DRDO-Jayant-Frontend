@@ -1,68 +1,133 @@
-import { useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
-import { Box, Drawer, IconButton, useMediaQuery } from '@mui/material'
-import MenuIcon from '@mui/icons-material/Menu'
+import { Box, List, ListItemButton, Typography, useMediaQuery } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import LoginPage from '../features/login/LoginPage'
-import { useChrome } from '../features/session/useChrome'
+import { useSections } from '../features/session/useSections'
 import { useSessionStore } from '../features/session/useSessionStore'
-import { ContextStrip, TopBar } from '../shared/ui/TopBar'
-import { IconRail } from '../shared/ui/IconRail'
-import { PictureWorkspace } from '../shared/ui/PictureWorkspace'
-import { ToolPanel } from '../shared/ui/ToolPanel'
+import { ExerciseClock } from '../shared/ui/ExerciseClock'
+import { GameStateChip } from '../shared/ui/GameStateChip'
+import { MapStage } from '../shared/ui/MapStage'
+import { ScenarioContext } from '../shared/ui/ScenarioContext'
+import { UserMenu } from '../shared/ui/UserMenu'
+
+function Index({ sections, sectionId, onSelect, direction = 'column' }) {
+  return (
+    <List
+      component="nav"
+      aria-label="Exercise sections"
+      disablePadding
+      sx={{
+        display: 'flex',
+        flexDirection: direction,
+        overflow: direction === 'row' ? 'auto' : 'hidden',
+        flexShrink: 0,
+      }}
+    >
+      {sections.map((section) => {
+        const selected = section.id === sectionId
+        return (
+          <ListItemButton
+            key={section.id}
+            selected={selected}
+            aria-current={selected ? 'page' : undefined}
+            onClick={() => onSelect(section.id)}
+            sx={{
+              alignItems: 'flex-start',
+              flex: direction === 'row' ? '0 0 auto' : '0 0 auto',
+              width: direction === 'row' ? 180 : 'auto',
+              borderLeft: direction === 'column' ? 3 : 0,
+              borderBottom: direction === 'row' ? 3 : 0,
+              borderColor: selected ? 'primary.main' : 'transparent',
+              borderRadius: 0,
+              py: 1.5,
+              px: 2,
+              '&.Mui-selected': { bgcolor: 'action.selected' },
+            }}
+          >
+            <Box sx={{ minWidth: 0 }}>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.2 }}>
+                {section.kicker}
+              </Typography>
+              <Typography variant="subtitle2" color="text.primary">
+                {section.label}
+              </Typography>
+            </Box>
+          </ListItemButton>
+        )
+      })}
+    </List>
+  )
+}
 
 function Picture() {
   const theme = useTheme()
-  const isPhone = useMediaQuery(theme.breakpoints.down('sm'))
-  const chrome = useChrome()
-  const [drawerOpen, setDrawerOpen] = useState(false)
-
-  const select = (id) => {
-    chrome.select(id)
-    if (isPhone && id !== 'extent') setDrawerOpen(false)
-  }
-
-  const rail = (
-    <IconRail
-      expanded={isPhone || chrome.expanded}
-      onToggle={() => (isPhone ? setDrawerOpen(false) : chrome.setExpanded((open) => !open))}
-      activeId={chrome.panel}
-      onSelect={select}
-    />
-  )
+  const phone = useMediaQuery(theme.breakpoints.down('sm'))
+  const session = useSessionStore((state) => state.session)
+  const { sections, sectionId, select } = useSections()
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0, bgcolor: 'background.default' }}>
-      <TopBar
-        menuOpen={chrome.menuOpen}
-        onMenuOpenChange={chrome.setMenuOpen}
-        leading={
-          isPhone ? (
-            <IconButton aria-label="Open menu" onClick={() => setDrawerOpen(true)}>
-              <MenuIcon />
-            </IconButton>
-          ) : null
-        }
-      />
-      <ContextStrip />
-      <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
-        {isPhone ? (
-          <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
-            {rail}
-          </Drawer>
-        ) : (
-          rail
-        )}
-        {isPhone ? (
-          <Drawer anchor="bottom" open={Boolean(chrome.panel)} onClose={chrome.closePanel}>
-            <ToolPanel panel={chrome.panel} onClose={chrome.closePanel} />
-          </Drawer>
-        ) : chrome.panel ? (
-          <Box sx={{ width: 300, flexShrink: 0, borderRight: 1, borderColor: 'divider', minHeight: 0 }}>
-            <ToolPanel panel={chrome.panel} onClose={chrome.closePanel} />
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0, bgcolor: 'background.default', color: 'text.primary' }}>
+      <Box
+        component="header"
+        sx={{
+          flexShrink: 0,
+          minHeight: 56,
+          px: 2,
+          py: 0.75,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+          borderBottom: 1,
+          borderColor: 'divider',
+          bgcolor: 'background.paper',
+        }}
+      >
+        <Box sx={{ minWidth: 0, flexShrink: 0 }}>
+          <Typography variant="subtitle2" sx={{ letterSpacing: '0.16em' }}>
+            JAYANT
+          </Typography>
+          <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
+            {session?.exerciseTitle}
+          </Typography>
+        </Box>
+        <Box sx={{ flex: 1, minWidth: 0, overflowX: 'auto', display: { xs: 'none', md: 'block' } }}>
+          <ScenarioContext />
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexShrink: 0, ml: 'auto' }}>
+          <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 1.5 }}>
+            <GameStateChip />
+            <ExerciseClock />
           </Box>
-        ) : null}
-        <PictureWorkspace variant="dock" />
+          <UserMenu />
+        </Box>
+      </Box>
+      <Box sx={{ display: { xs: 'block', md: 'none' }, px: 1.5, py: 0.75, borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper', overflowX: 'auto' }}>
+        <ScenarioContext />
+      </Box>
+      {phone ? <Index sections={sections} sectionId={sectionId} onSelect={select} direction="row" /> : null}
+      <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
+        {phone ? null : (
+          <Box
+            sx={{
+              width: 280,
+              flexShrink: 0,
+              borderRight: 1,
+              borderColor: 'divider',
+              bgcolor: 'background.paper',
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: 0,
+            }}
+          >
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', px: 2, pt: 2, pb: 1 }}>
+              {session?.classification}
+            </Typography>
+            <Box sx={{ overflow: 'auto' }}>
+              <Index sections={sections} sectionId={sectionId} onSelect={select} />
+            </Box>
+          </Box>
+        )}
+        <MapStage readout="none" />
       </Box>
     </Box>
   )

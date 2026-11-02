@@ -2,30 +2,17 @@
 
 ## Chrome pieces
 
-`TopBar` shows the wordmark, scenario, game, `StatusBadge`, the game-state chip, the clock, and `UserMenu`. Layout-2 passes `floating` so the bar sits on a paper card over the map. Layout-4 passes the phase switch as `trailing` on a wide screen, and repeats it under the bar on a phone.
+Each shell builds its own header from `ScenarioContext`, `GameStateChip`, `ExerciseClock`, and `UserMenu`. The section list is `useSections()`, not the tool menu.
 
-`StatusBadge` shows Live, Offline, or Replay when `flags.statusBadge` is on. Replay wins over Live. Demo shows when the flag `demoMode` is on, or, before the directory loads, when `session.demoMode` is true.
+`StatusBadge` shows Live, Offline, or Replay when `flags.statusBadge` is on. Replay wins over Live. Demo shows when the flag `demoMode` is on, or, before the directory loads, when `session.demoMode` is true. The locked frames do not put that badge, or a team list, in a strip under the map.
 
-`IconRail` is a vertical nav. Collapsed width 56, expanded 220. Groups scroll. `IconStrip` is the same data in a row and calls `onSelect(id, event)`. Layout-1’s phone drawer uses the rail. Layout-2’s phone uses the strip. Layout-3 uses the strip only. Layout-4 uses the rail on the right (`edge="end"`).
-
-`ToolPanel` is the frame: title from the panel id, close button, `PanelBody`. Width 300 on a wide screen. On a phone the shell puts it in a bottom drawer.
+`IconRail`, `IconStrip`, and `ToolPanel` are still in `src/shared/ui/`. The four shells do not mount them. A section click does not open a panel.
 
 `ConfirmDialog` is the shared yes/no. Scenario and game confirmation use their own dialog in `ScenarioContext.jsx` because that flow must keep the old value selected until confirm.
 
-## Picture workspace
-
-| Variant | Used by | Behaviour |
-| --- | --- | --- |
-| `dock` | layout-1 | Feature table under the map when the flag is on and the screen is at least `sm`. |
-| `overlay` | layout-2 | Map readout floats. A button toggles Picture and Board. The workspace itself is in normal flow (`flex: 1`) so the phone column still has a height. |
-| `plain` | layout-3 | No extra chrome. Open Planning from the strip. |
-| `phase` | layout-4 | Plan forces the board. Conduct shows the alert strip. Review docks the table. |
-
-`setSurface` also sets the tool back to select and clears the measure text. Do not call it on every render. Layout-4’s effect depends on `variant` and `phaseId` only.
-
 ## Map stage
 
-`MapStage` reads filters from the session and opacity from the directory. When the basemap source is `osm`, base filters are hidden and `MapWorkbench` inserts an OSM tile layer at index 0. When the source is `wms`, `serviceUrl` is the directory GeoServer address, or the session default.
+`MapStage` reads filters from the session and opacity from the directory. Layer names and the GeoServer address come from the dummy API (`fixtures.js` and `directory.js` settings), not from the map component. When the basemap source is `osm`, base filters are hidden and `MapWorkbench` inserts the tile URL from `settings.osmUrl`. When the source is `wms`, `serviceUrl` is the directory GeoServer address, or the session default. The locked shells pass `readout="none"`, so there is no status strip under the map.
 
 `readout="bar"` is a 32px strip under the map. `readout="overlay"` is a small paper at the bottom left. Both show latitude, longitude, EPSG:3857, and zoom.
 

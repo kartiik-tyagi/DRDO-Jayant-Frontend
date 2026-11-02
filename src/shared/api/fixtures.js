@@ -301,6 +301,15 @@ export const mapView = {
 
 export const mapService = 'http://127.0.0.1:8080/geoserver/wms'
 
+export const osmService = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+
+export const sections = [
+  { id: 'scenario', kicker: 'Exercise', label: 'Scenario' },
+  { id: 'game', kicker: 'Exercise', label: 'Game' },
+  { id: 'data', kicker: 'Records', label: 'Data management' },
+  { id: 'users', kicker: 'Access', label: 'User management' },
+]
+
 export const clockStart = '2026-10-28T06:00:00'
 
 const exerciseMeta = {
@@ -351,6 +360,7 @@ export function sessionFor(userId) {
     activeGame: { id: game.id, name: game.name },
     games: games.map(({ id, name, open }) => ({ id, name, open })),
     navigation: navigation(grant.canControlGame),
+    sections,
     resources: pick(resourceCatalog, grant.resourceIds),
     plans: pick(planCatalog, grant.planIds),
     filters: mapFilters
