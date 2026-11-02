@@ -36,13 +36,15 @@ export function StatusFooter({ readout }) {
       component="footer"
       aria-label="Map readout"
       sx={{
-        height: 28,
+        minHeight: 28,
         px: 1.5,
+        py: 0.25,
         flexShrink: 0,
         display: 'flex',
         alignItems: 'center',
-        gap: 2,
-        overflowX: 'auto',
+        flexWrap: 'wrap',
+        columnGap: 2,
+        rowGap: 0.25,
         borderTop: 1,
         borderColor: 'divider',
         bgcolor: 'background.paper',
