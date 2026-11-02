@@ -1,71 +1,126 @@
-import { useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
+import { Box, Button, Paper, Typography, useMediaQuery } from '@mui/material'
 import { alpha, useTheme } from '@mui/material/styles'
-import { Box, Drawer, Paper, useMediaQuery } from '@mui/material'
 import LoginPage from '../features/login/LoginPage'
-import { useChrome } from '../features/session/useChrome'
+import { useSections } from '../features/session/useSections'
 import { useSessionStore } from '../features/session/useSessionStore'
-import { ContextStrip, TopBar } from '../shared/ui/TopBar'
-import { IconRail } from '../shared/ui/IconRail'
-import { IconStrip } from '../shared/ui/IconStrip'
-import { PictureWorkspace } from '../shared/ui/PictureWorkspace'
-import { ToolPanel } from '../shared/ui/ToolPanel'
+import { ExerciseClock } from '../shared/ui/ExerciseClock'
+import { GameStateChip } from '../shared/ui/GameStateChip'
+import { MapStage } from '../shared/ui/MapStage'
+import { ScenarioContext } from '../shared/ui/ScenarioContext'
+import { UserMenu } from '../shared/ui/UserMenu'
 
 function Picture() {
   const theme = useTheme()
-  const isPhone = useMediaQuery(theme.breakpoints.down('sm'))
-  const chrome = useChrome()
-  const surface = alpha(theme.palette.background.paper, 0.94)
-
-  if (isPhone) {
-    return (
-      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-        <TopBar menuOpen={chrome.menuOpen} onMenuOpenChange={chrome.setMenuOpen} />
-        <ContextStrip />
-        <PictureWorkspace variant="overlay" />
-        <IconStrip activeId={chrome.panel} onSelect={chrome.select} />
-        <Drawer anchor="bottom" open={Boolean(chrome.panel)} onClose={chrome.closePanel}>
-          <ToolPanel panel={chrome.panel} onClose={chrome.closePanel} />
-        </Drawer>
-      </Box>
-    )
-  }
+  const phone = useMediaQuery(theme.breakpoints.down('sm'))
+  const session = useSessionStore((state) => state.session)
+  const { sections, sectionId, select } = useSections()
+  const glass = alpha(theme.palette.background.paper, 0.94)
 
   return (
-    <Box sx={{ height: '100%', position: 'relative', display: 'flex', flexDirection: 'column' }}>
-      <PictureWorkspace variant="overlay" />
-      <Box sx={{ position: 'absolute', zIndex: 2, top: 8, left: 8, right: 8 }}>
-        <Paper elevation={4} sx={{ bgcolor: surface }}>
-          <TopBar floating menuOpen={chrome.menuOpen} onMenuOpenChange={chrome.setMenuOpen} />
-        </Paper>
+    <Box sx={{ height: '100%', position: 'relative', bgcolor: 'background.default' }}>
+      <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column' }}>
+        <MapStage readout="none" />
       </Box>
-      <Box
+
+      <Paper
+        component="header"
+        elevation={4}
         sx={{
           position: 'absolute',
           zIndex: 2,
-          top: 64,
-          left: 8,
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: 1,
-          maxHeight: 'calc(100% - 112px)',
+          top: 12,
+          left: 12,
+          px: 1.5,
+          py: 0.75,
+          bgcolor: glass,
+          maxWidth: { xs: 'calc(100% - 88px)', sm: 280 },
         }}
       >
-        <Paper elevation={4} sx={{ bgcolor: surface, overflow: 'auto', maxHeight: '100%' }}>
-          <IconRail
-            fill={false}
-            expanded={chrome.expanded}
-            onToggle={() => chrome.setExpanded((open) => !open)}
-            activeId={chrome.panel}
-            onSelect={chrome.select}
-          />
-        </Paper>
-        {chrome.panel ? (
-          <Paper elevation={4} sx={{ bgcolor: surface, overflow: 'auto', maxHeight: '100%' }}>
-            <ToolPanel panel={chrome.panel} onClose={chrome.closePanel} />
-          </Paper>
-        ) : null}
-      </Box>
+        <Typography variant="subtitle2" sx={{ letterSpacing: '0.16em' }}>
+          JAYANT
+        </Typography>
+        <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
+          {session?.exerciseTitle}
+        </Typography>
+      </Paper>
+
+      <Paper
+        elevation={4}
+        sx={{
+          position: 'absolute',
+          zIndex: 2,
+          top: 12,
+          right: 12,
+          px: 1,
+          py: 0.5,
+          bgcolor: glass,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+        }}
+      >
+        {phone ? null : <GameStateChip />}
+        {phone ? null : <ExerciseClock />}
+        <UserMenu />
+      </Paper>
+
+      <Paper
+        elevation={4}
+        sx={{
+          position: 'absolute',
+          zIndex: 2,
+          top: phone ? 76 : 72,
+          left: 12,
+          right: phone ? 12 : 'auto',
+          px: 1,
+          py: 0.5,
+          bgcolor: glass,
+          maxWidth: phone ? 'none' : 520,
+          overflowX: 'auto',
+        }}
+      >
+        <ScenarioContext />
+      </Paper>
+
+      <Paper
+        component="nav"
+        aria-label="Exercise sections"
+        elevation={6}
+        sx={{
+          position: 'absolute',
+          zIndex: 2,
+          left: '50%',
+          bottom: 16,
+          transform: 'translateX(-50%)',
+          width: { xs: 'calc(100% - 24px)', md: 720 },
+          p: 1,
+          bgcolor: glass,
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(4, 1fr)' },
+          gap: 1,
+        }}
+      >
+        {sections.map((section) => {
+          const selected = section.id === sectionId
+          return (
+            <Button
+              key={section.id}
+              variant={selected ? 'contained' : 'outlined'}
+              aria-pressed={selected}
+              onClick={() => select(section.id)}
+              sx={{ minHeight: 64, flexDirection: 'column', alignItems: 'flex-start', px: 1.5, textAlign: 'left' }}
+            >
+              <Typography variant="caption" sx={{ display: 'block', color: 'inherit', opacity: 0.8, lineHeight: 1.2 }}>
+                {section.kicker}
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'inherit', fontWeight: 600 }}>
+                {section.label}
+              </Typography>
+            </Button>
+          )
+        })}
+      </Paper>
     </Box>
   )
 }

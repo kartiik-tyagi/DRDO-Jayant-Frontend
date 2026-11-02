@@ -55,14 +55,16 @@ commit((userId) => api.setFlag(userId, 'featureTable', false))
   .catch(() => { /* toast already shown */ })
 ```
 
-## Layout variants
+## Layout frames
 
-| Branch | `PictureWorkspace` | Shell extras |
-| --- | --- | --- |
-| layout-1 | `dock` | Left `IconRail`, 300px panel |
-| layout-2 | `overlay` | Floating bar, Picture/Board button |
-| layout-3 | `plain` | `IconStrip` and `Popover` |
-| layout-4 | `phase` | Plan / Conduct / Review, right rail |
+| Branch | Frame |
+| --- | --- |
+| layout-1 | Left text index of `session.sections`, map beside it |
+| layout-2 | Full-bleed map, bottom command deck |
+| layout-3 | Masthead and a chapter row |
+| layout-4 | Phase script beside the map, sections under the phases |
+
+Sections, from the dummy API: Scenario, Game, Data management, User management. They do not open a page.
 
 Copy shared files. Do not copy `src/shell/Shell.jsx`.
 
