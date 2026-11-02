@@ -59,12 +59,12 @@ commit((userId) => api.setFlag(userId, 'featureTable', false))
 
 | Branch | Frame |
 | --- | --- |
-| layout-1 | Left text index of `session.sections`, map beside it |
-| layout-2 | Full-bleed map, bottom command deck |
-| layout-3 | Masthead and a chapter row |
-| layout-4 | Phase script beside the map, sections under the phases |
+| layout-1 | Workstation. Left application rail, map-tool shelf, footer |
+| layout-2 | Menu shelf. Application menu in the command bar, tool shelf under it |
+| layout-3 | Dual rail. Tools on the left, application menu on the right |
+| layout-4 | Command band. Named application band, tools on request |
 
-Sections, from the dummy API: Scenario, Game, Data management, User management. They do not open a page.
+Sections, from the dummy API: Scenario management, Game, Standard data, User management. They do not open a page. Map tools do open a panel.
 
 Copy shared files. Do not copy `src/shell/Shell.jsx`.
 

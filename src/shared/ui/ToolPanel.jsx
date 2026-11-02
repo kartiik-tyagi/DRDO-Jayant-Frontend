@@ -30,9 +30,9 @@ export function ToolPanel({ panel, onClose }) {
   return (
     <Box
       sx={{
-        width: { xs: 'min(100vw, 320px)', sm: 300 },
-        maxHeight: { xs: '70vh', sm: 'none' },
-        height: { sm: '100%' },
+        width: '100%',
+        height: '100%',
+        minHeight: 0,
         display: 'flex',
         flexDirection: 'column',
         bgcolor: 'background.paper',

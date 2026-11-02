@@ -68,10 +68,10 @@ The same product is checked out as four local git branches. Shared code is the s
 
 | Branch | `src/shell/meta.js` | What the person sees |
 | --- | --- | --- |
-| `layout-1` | Exercise index | A full-height text index on the left: Scenario, Game, Data management, User management. The map fills the rest. On a phone the index is a horizontal row. |
-| `layout-2` | Picture console | The map is the whole window. Identity floats on it. The four sections are a command deck along the bottom, not a column. |
-| `layout-3` | Chapter masthead | No side column. A title band, then the four sections as chapters in a row, then the map. |
-| `layout-4` | Phase script | Plan, Conduct, and Review are the large control, stacked beside the map. The four sections sit under that script. |
+| `layout-1` | Workstation | Command bar on top. Application menu is a left rail that collapses to icons. Map tools are a shelf over the map and can hide. The tool you open docks on the right. A readout footer spans the bottom. |
+| `layout-2` | Menu shelf | No side column. Application is a menu on the command bar. Map tools are a shelf under that bar and can hide. The open tool docks on the right. |
+| `layout-3` | Dual rail | Map tools are a rail on the left. The application menu is a rail on the right. Either rail can hide. The open tool docks beside the tool rail. |
+| `layout-4` | Command band | The application menu is a named band under the command bar and can hide. Map tools stay hidden until the command bar asks for them. The open tool docks on the right. |
 
 Files that **must stay different** per branch:
 

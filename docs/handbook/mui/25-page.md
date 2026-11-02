@@ -1,6 +1,6 @@
 # A whole page
 
-Navbar, sidebar, content, and footer in one column that fills the viewport. This is a general page shape. Jayant’s four shells do not all use it. Layout 1 is an index beside the map. Layout 2 floats a deck on the picture. Layout 3 is a masthead. Layout 4 is a phase script. Copy a shell only when you mean that frame.
+Navbar, sidebar, content, and footer in one column that fills the viewport. This is a general page shape. Jayant’s shells all keep a command bar and a readout footer, and they place the application menu and the map tools differently. Copy a shell only when you mean that frame.
 
 ```jsx
 import { useState } from 'react'
