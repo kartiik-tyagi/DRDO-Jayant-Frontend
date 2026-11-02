@@ -109,7 +109,7 @@ APEX transport, all no-ops for anyone else:
 
 ## Phases
 
-Only layout-4 shows Plan, Conduct, and Review, as the script beside the map. Choosing one calls `applyPhase`, which sets `phaseId` and turns filters on or off from that phase’s `filterIds`. Nothing is selected until a phase is chosen.
+No shell shows Plan, Conduct, or Review. `applyPhase` is still on the session store. It sets `phaseId` and turns filters on or off from that phase’s `filterIds`. Nothing calls it from the current frames.
 
 | Phase | Layers forced on |
 | --- | --- |
@@ -117,4 +117,4 @@ Only layout-4 shows Plan, Conduct, and Review, as the script beside the map. Cho
 | conduct | countries, places, coast |
 | review | countries, coast, disputed |
 
-Choosing a filter by hand clears `phaseId`. The phase script then shows no selected phase, because the filters no longer match one. The layout does not dock a feature table or an alert strip under the map.
+Choosing a filter by hand clears `phaseId`. The frames do not dock a feature table or an alert strip under the map. The readout footer is separate from the map and stays visible.

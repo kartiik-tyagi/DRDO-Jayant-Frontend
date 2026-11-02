@@ -304,10 +304,10 @@ export const mapService = 'http://127.0.0.1:8080/geoserver/wms'
 export const osmService = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
 
 export const sections = [
-  { id: 'scenario', kicker: 'Exercise', label: 'Scenario' },
-  { id: 'game', kicker: 'Exercise', label: 'Game' },
-  { id: 'data', kicker: 'Records', label: 'Data management' },
-  { id: 'users', kicker: 'Access', label: 'User management' },
+  { id: 'scenario', kicker: 'Exercise', label: 'Scenario management', icon: 'flag' },
+  { id: 'game', kicker: 'Exercise', label: 'Game', icon: 'control' },
+  { id: 'data', kicker: 'Records', label: 'Standard data', icon: 'table' },
+  { id: 'users', kicker: 'Access', label: 'User management', icon: 'directory' },
 ]
 
 export const clockStart = '2026-10-28T06:00:00'

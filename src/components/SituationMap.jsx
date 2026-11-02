@@ -29,13 +29,14 @@ function createTileLayer(serviceUrl, filter) {
   return layer
 }
 
-export default function SituationMap({ view, serviceUrl, layers, resetToken, onPointer, onZoom, onMap }) {
+export default function SituationMap({ view, serviceUrl, layers, resetToken, onPointer, onZoom, onView, onMap }) {
   const targetRef = useRef(null)
   const mapRef = useRef(null)
   const viewRef = useRef(view)
   const layersRef = useRef(layers)
   const onPointerRef = useRef(onPointer)
   const onZoomRef = useRef(onZoom)
+  const onViewRef = useRef(onView)
   const onMapRef = useRef(onMap)
   const skipReset = useRef(true)
   viewRef.current = view
@@ -46,6 +47,7 @@ export default function SituationMap({ view, serviceUrl, layers, resetToken, onP
   useEffect(() => {
     onPointerRef.current = onPointer
     onZoomRef.current = onZoom
+    onViewRef.current = onView
     onMapRef.current = onMap
   })
 
@@ -77,8 +79,11 @@ export default function SituationMap({ view, serviceUrl, layers, resetToken, onP
     })
 
     const publishZoom = () => {
-      const zoom = map.getView().getZoom()
-      if (zoom != null) onZoomRef.current?.(Math.round(zoom * 10) / 10)
+      const mapView = map.getView()
+      const zoom = mapView.getZoom()
+      const rounded = zoom == null ? null : Math.round(zoom * 10) / 10
+      onViewRef.current?.({ zoom: rounded, resolution: mapView.getResolution() ?? null })
+      if (rounded != null) onZoomRef.current?.(rounded)
     }
     map.getView().on('change:resolution', publishZoom)
     publishZoom()
