@@ -64,15 +64,15 @@ export default function LoginPage() {
 
   return (
     <Box
-      sx={{
+      sx={(theme) => ({
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
         color: 'text.primary',
-        backgroundImage: `linear-gradient(90deg, rgba(6, 10, 8, 0.2), rgba(6, 10, 8, 0.45)), url(${data.backgroundImage})`,
+        backgroundImage: `linear-gradient(90deg, ${alpha(theme.palette.background.default, 0.2)}, ${alpha(theme.palette.background.default, 0.45)}), url(${data.backgroundImage})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-      }}
+      })}
     >
       <Box
         sx={{
@@ -82,8 +82,8 @@ export default function LoginPage() {
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: 2,
-          bgcolor: 'rgba(10, 14, 12, 0.72)',
-          color: '#e8f0ea',
+          bgcolor: (theme) => alpha(theme.palette.background.paper, 0.72),
+          color: 'text.primary',
         }}
       >
         <Typography variant="caption" sx={{ letterSpacing: '0.16em' }}>

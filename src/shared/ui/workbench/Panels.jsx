@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Box, Button, List, ListItemButton, ListItemText, MenuItem, Slider, Stack, TextField, Typography } from '@mui/material'
 import dayjs from 'dayjs'
 import * as api from '../../../shared/api/client'
@@ -188,14 +188,18 @@ function DrawPanel() {
 
 function TeamLegend() {
   const teams = useDirectoryStore((state) => state.data?.teams ?? EMPTY_LIST)
+  const swatches = useDirectoryStore((state) => state.data?.swatches ?? EMPTY_LIST)
   return (
     <Stack spacing={1}>
       <Caption>Team colour is drawn on units when team markers are switched on.</Caption>
-      {teams.map((team) => (
-        <Typography key={team.id} variant="body2">
-          {team.name}
-        </Typography>
-      ))}
+      {teams.map((team) => {
+        const swatch = swatches.find((item) => item.id === team.swatchId)
+        return (
+          <Typography key={team.id} variant="body2">
+            {team.name} · {swatch?.name || 'Unassigned'}
+          </Typography>
+        )
+      })}
     </Stack>
   )
 }
@@ -546,37 +550,149 @@ function Catalogue({ kind }) {
   )
 }
 
+function choiceLabel(item, teams, selfId) {
+  if (!item.takenBy || item.takenBy === selfId) return item.name
+  const holder = teams.find((team) => team.id === item.takenBy)
+  return `${item.name} · ${holder?.name || 'in use'}`
+}
+
+function ChoiceField({ label, value, onChange, options, selfId, teams }) {
+  return (
+    <TextField select size="small" label={label} value={value} onChange={onChange}>
+      <MenuItem value="">Choose</MenuItem>
+      {options.map((item) => (
+        <MenuItem key={item.id} value={item.id} disabled={Boolean(item.takenBy) && item.takenBy !== selfId}>
+          {choiceLabel(item, teams, selfId)}
+        </MenuItem>
+      ))}
+    </TextField>
+  )
+}
+
+function TeamEditor({ team, swatches, themes, teams }) {
+  const commit = useCommit()
+  const [draft, setDraft] = useState({ swatchId: team.swatchId, themeId: team.themeId })
+  useEffect(() => {
+    setDraft({ swatchId: team.swatchId, themeId: team.themeId })
+  }, [team.swatchId, team.themeId])
+  return (
+    <Stack spacing={1}>
+      <Typography variant="body2">{team.name}</Typography>
+      <ChoiceField
+        label="Map colour"
+        value={draft.swatchId}
+        options={swatches}
+        selfId={team.id}
+        teams={teams}
+        onChange={(event) => setDraft({ ...draft, swatchId: event.target.value })}
+      />
+      <ChoiceField
+        label="Theme"
+        value={draft.themeId}
+        options={themes}
+        selfId={team.id}
+        teams={teams}
+        onChange={(event) => setDraft({ ...draft, themeId: event.target.value })}
+      />
+      <Stack direction="row" spacing={1}>
+        <Button
+          size="small"
+          onClick={() =>
+            commit((userId) =>
+              api.saveTeam(userId, {
+                id: team.id,
+                name: team.name,
+                icon: team.icon,
+                swatchId: draft.swatchId,
+                themeId: draft.themeId,
+              }),
+            )
+          }
+        >
+          Save
+        </Button>
+        <Button size="small" onClick={() => commit((userId) => api.deleteTeam(userId, team.id))}>
+          Remove
+        </Button>
+      </Stack>
+    </Stack>
+  )
+}
+
 function DirectoryPanel() {
   const data = useDirectoryStore((state) => state.data)
   const commit = useCommit()
-  const [user, setUser] = useState({ newId: '', title: '', role: 'Theatre picture', service: 'Joint' })
-  const [team, setTeam] = useState({ newId: '', name: '', color: '#8eb7e0', icon: 'shield' })
+  const [user, setUser] = useState({ newId: '', title: '', role: 'Theatre picture', service: 'Joint', teamId: '' })
+  const [team, setTeam] = useState({ newId: '', name: '', swatchId: '', themeId: '', icon: 'shield' })
   const [role, setRole] = useState({ newId: '', name: '' })
   if (!data) return null
+  const swatches = data.swatches ?? EMPTY_LIST
+  const themes = data.themeChoices ?? EMPTY_LIST
   return (
     <Stack spacing={2}>
       <Typography variant="subtitle2">Users</Typography>
       {data.users.map((item) => (
-        <Stack key={item.id} direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-          <Typography variant="body2" sx={{ flex: 1 }}>{item.title}</Typography>
-          <Caption>{item.role}</Caption>
-          {item.id !== 'apex' ? <Button size="small" onClick={() => commit((userId) => api.deleteUser(userId, item.id))}>Remove</Button> : null}
+        <Stack key={item.id} spacing={1}>
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+            <Typography variant="body2" sx={{ flex: 1 }}>{item.title}</Typography>
+            <Caption>{item.role}</Caption>
+            {item.id !== 'apex' ? <Button size="small" onClick={() => commit((userId) => api.deleteUser(userId, item.id))}>Remove</Button> : null}
+          </Stack>
+          {item.id === 'apex' ? (
+            <Caption>No team. APEX chooses a personal theme.</Caption>
+          ) : (
+            <TextField
+              select
+              size="small"
+              label="Team"
+              value={item.teamId || ''}
+              onChange={(event) => commit((userId) => api.assignUserTeam(userId, item.id, event.target.value))}
+            >
+              {data.teams.map((entry) => (
+                <MenuItem key={entry.id} value={entry.id}>{entry.name}</MenuItem>
+              ))}
+            </TextField>
+          )}
         </Stack>
       ))}
       <TextField size="small" label="User id" value={user.newId} onChange={(event) => setUser({ ...user, newId: event.target.value })} />
       <TextField size="small" label="Title" value={user.title} onChange={(event) => setUser({ ...user, title: event.target.value })} />
       <TextField size="small" label="Role" value={user.role} onChange={(event) => setUser({ ...user, role: event.target.value })} />
       <TextField size="small" label="Service" value={user.service} onChange={(event) => setUser({ ...user, service: event.target.value })} />
-      <Button onClick={() => commit((userId) => api.saveUser(userId, user)).then(() => setUser({ ...user, newId: '', title: '' }))}>Add user</Button>
+      <TextField select size="small" label="Team" value={user.teamId} onChange={(event) => setUser({ ...user, teamId: event.target.value })}>
+        <MenuItem value="">Choose</MenuItem>
+        {data.teams.map((entry) => (
+          <MenuItem key={entry.id} value={entry.id}>{entry.name}</MenuItem>
+        ))}
+      </TextField>
+      <Button
+        disabled={!user.teamId}
+        onClick={() => commit((userId) => api.saveUser(userId, user)).then(() => setUser({ ...user, newId: '', title: '', teamId: '' }))}
+      >
+        Add user
+      </Button>
       <Typography variant="subtitle2">Teams</Typography>
       {data.teams.map((item) => (
-        <Stack key={item.id} direction="row" spacing={1}>
-          <Typography variant="body2" sx={{ flex: 1 }}>{item.name}</Typography>
-          <Button size="small" onClick={() => commit((userId) => api.deleteTeam(userId, item.id))}>Remove</Button>
-        </Stack>
+        <TeamEditor key={item.id} team={item} swatches={swatches} themes={themes} teams={data.teams} />
       ))}
       <TextField size="small" label="Team id" value={team.newId} onChange={(event) => setTeam({ ...team, newId: event.target.value })} />
       <TextField size="small" label="Team name" value={team.name} onChange={(event) => setTeam({ ...team, name: event.target.value })} />
+      <ChoiceField
+        label="Map colour"
+        value={team.swatchId}
+        options={swatches}
+        selfId=""
+        teams={data.teams}
+        onChange={(event) => setTeam({ ...team, swatchId: event.target.value })}
+      />
+      <ChoiceField
+        label="Theme"
+        value={team.themeId}
+        options={themes}
+        selfId=""
+        teams={data.teams}
+        onChange={(event) => setTeam({ ...team, themeId: event.target.value })}
+      />
       <Box sx={{ display: 'flex', gap: 0.5 }}>
         {['shield', 'flag', 'anchor', 'flight'].map((icon) => (
           <Button key={icon} size="small" variant={team.icon === icon ? 'contained' : 'text'} onClick={() => setTeam({ ...team, icon })}>
@@ -584,7 +700,7 @@ function DirectoryPanel() {
           </Button>
         ))}
       </Box>
-      <Button onClick={() => commit((userId) => api.saveTeam(userId, team)).then(() => setTeam({ ...team, newId: '', name: '' }))}>Add team</Button>
+      <Button onClick={() => commit((userId) => api.saveTeam(userId, team)).then(() => setTeam({ ...team, newId: '', name: '', swatchId: '', themeId: '' }))}>Add team</Button>
       <Typography variant="subtitle2">Roles</Typography>
       {data.roles.map((item) => (
         <Stack key={item.id} direction="row" spacing={1}>
