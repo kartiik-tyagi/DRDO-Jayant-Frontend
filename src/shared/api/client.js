@@ -2,7 +2,8 @@ import { z } from 'zod'
 import { logger } from '../lib/logger'
 import { readExerciseChoice, writeExerciseChoice } from '../lib/sessionKey'
 import { ApiError } from './errors'
-import { activateGame, activateScenario, adoptExercise, checkPassword, exerciseChoice, loginContext, sessionFor } from './fixtures'
+import { paletteById } from '../theme/palettes'
+import { activateGame, activateScenario, adoptExercise, checkPassword, exerciseChoice, loginContext, sessionFor, setAppointmentTheme } from './fixtures'
 
 export { ApiError } from './errors'
 
@@ -19,6 +20,14 @@ const themeSchema = z.object({
   textPrimary: z.string(),
   textSecondary: z.string(),
   divider: z.string(),
+  error: z.string(),
+  errorContrast: z.string(),
+  warning: z.string(),
+  warningContrast: z.string(),
+  success: z.string(),
+  successContrast: z.string(),
+  info: z.string(),
+  infoContrast: z.string(),
   fontFamily: z.string(),
   borderRadius: z.number(),
 })
@@ -26,6 +35,7 @@ const themeSchema = z.object({
 const namedThemeSchema = themeSchema.extend({
   id: z.string(),
   name: z.string(),
+  family: z.string(),
 })
 
 const userSchema = z.object({
@@ -65,6 +75,7 @@ const sessionSchema = z.object({
   profile: userSchema,
   theme: namedThemeSchema,
   themes: z.array(namedThemeSchema).min(1),
+  canSelectTheme: z.boolean(),
   scenarios: z.array(z.object({ id: z.string(), name: z.string(), active: z.boolean() })).min(1),
   selectedScenarioId: z.string(),
   activeScenarioId: z.string(),
@@ -171,6 +182,21 @@ function persistExercise(userId, event, idName, id) {
   logger.info(event, { userId, [idName]: id, persisted })
 }
 
+export async function setApexTheme({ userId, themeId }) {
+  try {
+    await wait(80)
+    if (userId !== 'apex') throw new ApiError('Only APEX may choose a theme.', 'FORBIDDEN')
+    const theme = paletteById(themeId)
+    if (!theme) throw new ApiError('That theme is not in the catalog.', 'NOT_FOUND')
+    if (!setAppointmentTheme(userId, themeId)) throw new ApiError('Only APEX may choose a theme.', 'FORBIDDEN')
+    logger.info('theme.changed', { userId, themeId })
+    return theme
+  } catch (error) {
+    logger.warn('theme.rejected', { userId: userId || null, themeId: themeId || null, code: error?.code || 'UNKNOWN' })
+    throw error
+  }
+}
+
 export async function changeScenario({ userId, scenarioId }) {
   try {
     await wait(160)
@@ -232,6 +258,7 @@ export {
   saveRecording,
   saveRole,
   saveRoute,
+  assignUserTeam,
   saveTeam,
   saveUser,
   saveZone,

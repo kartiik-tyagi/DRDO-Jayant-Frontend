@@ -40,22 +40,22 @@ function readGeometry(tool, geometry) {
   return format.writeGeometryObject(geom, projection)
 }
 
-function styleFor(feature) {
-  const color = feature.get('color') || '#d4b15a'
+function styleFor(feature, marks) {
+  const color = feature.get('color') || marks.objective
   const kind = feature.get('kind')
   if (kind === 'point') {
     return new Style({
       image: new CircleStyle({
         radius: 7,
         fill: new Fill({ color }),
-        stroke: new Stroke({ color: '#f7fbf8', width: 1.5 }),
+        stroke: new Stroke({ color: marks.halo, width: 1.5 }),
       }),
       text: new Text({
         text: feature.get('label') || '',
         offsetY: -14,
         font: '12px sans-serif',
-        fill: new Fill({ color: '#f7fbf8' }),
-        stroke: new Stroke({ color: '#102018', width: 3 }),
+        fill: new Fill({ color: marks.halo }),
+        stroke: new Stroke({ color: marks.outline, width: 3 }),
       }),
     })
   }
@@ -67,8 +67,8 @@ function styleFor(feature) {
         ? new Text({
             text: feature.get('label'),
             font: '12px sans-serif',
-            fill: new Fill({ color: '#f7fbf8' }),
-            stroke: new Stroke({ color: '#102018', width: 3 }),
+            fill: new Fill({ color: marks.halo }),
+            stroke: new Stroke({ color: marks.outline, width: 3 }),
           })
         : undefined,
     }),
@@ -165,9 +165,9 @@ export function MapWorkbench({ map }) {
   }, [map, userId, surface, data?.flags?.mapSettings])
 
   useEffect(() => {
-    if (!map || !data) return undefined
+    if (!map || !data?.marks) return undefined
     const source = new VectorSource()
-    const teamColor = (teamId) => data.teams.find((team) => team.id === teamId)?.color || '#d4b15a'
+    const teamColor = (teamId) => data.teams.find((team) => team.id === teamId)?.color || data.marks.objective
     if (surface === 'planning') {
       const query = graphicQuery
       for (const graphic of data.graphics) {
@@ -206,7 +206,7 @@ export function MapWorkbench({ map }) {
       }
       if (data.replay?.positions?.length) {
         for (const marker of data.replay.positions) {
-          addFeature(source, { id: `replay-${marker.id}`, geometry: { type: 'Point', coordinates: [marker.lon, marker.lat] }, label: marker.name, color: '#f0c674', collection: 'replay' }, 'point')
+          addFeature(source, { id: `replay-${marker.id}`, geometry: { type: 'Point', coordinates: [marker.lon, marker.lat] }, label: marker.name, color: data.marks.replay, collection: 'replay' }, 'point')
         }
       }
       for (const marker of data.scenario?.markers || []) {
@@ -214,7 +214,7 @@ export function MapWorkbench({ map }) {
         addFeature(source, { id: marker.id, geometry: { type: 'Point', coordinates: [marker.lon, marker.lat] }, label: marker.name, color: marker.color, collection: 'scenario' }, 'point')
       }
     }
-    const layer = new VectorLayer({ source, style: styleFor })
+    const layer = new VectorLayer({ source, style: (feature) => styleFor(feature, data.marks) })
     map.addLayer(layer)
 
     const interactions = []

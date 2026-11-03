@@ -1,37 +1,38 @@
 import { createTheme } from '@mui/material/styles'
 
-export function createAppTheme(themeConfig = {}) {
+export function createAppTheme(themeConfig) {
   const mode = themeConfig.mode === 'light' ? 'light' : 'dark'
-  const textPrimary = themeConfig.textPrimary || (mode === 'light' ? '#1c1914' : '#e8f0ea')
-  const textSecondary = themeConfig.textSecondary || (mode === 'light' ? '#5c564c' : '#b7c6bd')
-  const divider = themeConfig.divider || (mode === 'light' ? 'rgba(28, 25, 20, 0.14)' : 'rgba(232, 240, 234, 0.16)')
 
   return createTheme({
     palette: {
       mode,
       primary: {
-        main: themeConfig.primary || '#3caf72',
-        contrastText: themeConfig.primaryContrast || '#062116',
+        main: themeConfig.primary,
+        contrastText: themeConfig.primaryContrast,
       },
       secondary: {
-        main: themeConfig.secondary || '#d4b15a',
-        contrastText: themeConfig.secondaryContrast || '#1c1914',
+        main: themeConfig.secondary,
+        contrastText: themeConfig.secondaryContrast,
       },
       background: {
-        default: themeConfig.backgroundDefault || '#0d1411',
-        paper: themeConfig.backgroundPaper || '#16211c',
+        default: themeConfig.backgroundDefault,
+        paper: themeConfig.backgroundPaper,
       },
       text: {
-        primary: textPrimary,
-        secondary: textSecondary,
+        primary: themeConfig.textPrimary,
+        secondary: themeConfig.textSecondary,
       },
-      divider,
+      divider: themeConfig.divider,
+      error: { main: themeConfig.error, contrastText: themeConfig.errorContrast },
+      warning: { main: themeConfig.warning, contrastText: themeConfig.warningContrast },
+      success: { main: themeConfig.success, contrastText: themeConfig.successContrast },
+      info: { main: themeConfig.info, contrastText: themeConfig.infoContrast },
     },
     shape: {
-      borderRadius: Number(themeConfig.borderRadius) || 8,
+      borderRadius: themeConfig.borderRadius,
     },
     typography: {
-      fontFamily: themeConfig.fontFamily || '"Roboto", "Segoe UI", sans-serif',
+      fontFamily: themeConfig.fontFamily,
       h4: { fontSize: 'clamp(1.5rem, 2.4vw, 2.125rem)', fontWeight: 600 },
       h5: { fontSize: 'clamp(1.25rem, 1.8vw, 1.5rem)', fontWeight: 600 },
       h6: { fontSize: '1.05rem', fontWeight: 600 },
@@ -42,7 +43,7 @@ export function createAppTheme(themeConfig = {}) {
     components: {
       MuiCssBaseline: {
         styleOverrides: {
-          body: { color: textPrimary, backgroundColor: themeConfig.backgroundDefault || '#0d1411' },
+          body: { color: themeConfig.textPrimary, backgroundColor: themeConfig.backgroundDefault },
         },
       },
       MuiButton: {
@@ -52,18 +53,18 @@ export function createAppTheme(themeConfig = {}) {
         styleOverrides: { root: { minHeight: 40, minWidth: 40 } },
       },
       MuiListItemButton: {
-        styleOverrides: { root: { minHeight: 40, color: textPrimary } },
+        styleOverrides: { root: { minHeight: 40, color: themeConfig.textPrimary } },
       },
       MuiInputLabel: {
-        styleOverrides: { root: { color: textSecondary } },
+        styleOverrides: { root: { color: themeConfig.textSecondary } },
       },
       MuiFormLabel: {
-        styleOverrides: { root: { color: textSecondary } },
+        styleOverrides: { root: { color: themeConfig.textSecondary } },
       },
       MuiOutlinedInput: {
         styleOverrides: {
-          root: { color: textPrimary },
-          notchedOutline: { borderColor: divider },
+          root: { color: themeConfig.textPrimary },
+          notchedOutline: { borderColor: themeConfig.divider },
         },
       },
     },

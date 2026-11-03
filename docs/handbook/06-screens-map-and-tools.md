@@ -88,13 +88,7 @@ MUI `Select` accessible name is often the selected value (â€œNorthern Approachâ€
 
 `ListItemText` in MUI 9 takes `slotProps`, not `primaryTypographyProps`.
 
-Primary colours that pass contrast:
-
-| Theme | Main | Contrast text |
-| --- | --- | --- |
-| Field | `#3caf72` | `#062116` |
-| Night watch | `#8eb7e0` | `#0c1218` |
-| Sand | `#5a4616` | `#fffdf8` |
+Primary colours come from the catalog row, not from this page. `src/shared/theme/palettes.js` holds the twenty themes. `src/shared/theme/swatches.js` holds the twelve map colours and the picture inks. A team locks one of each. APEX may wear any theme without taking it from the team. The map ground uses `background.default`. Unit fill uses the team swatch, so changing the theme does not repaint the forces.
 
 ## Drawing a unit, the short version
 
