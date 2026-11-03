@@ -1,4 +1,6 @@
 import { logger } from '../lib/logger'
+import { palettes } from '../theme/palettes'
+import { marks, swatchById, swatches } from '../theme/swatches'
 import { ApiError } from './errors'
 import {
   accessFor,
@@ -7,7 +9,9 @@ import {
   listDirectoryUsers,
   mapService,
   osmService,
+  registerTeamThemes,
   removeDirectoryUser,
+  setAppointmentTeam,
   updateDirectoryUser,
 } from './fixtures'
 
@@ -41,9 +45,11 @@ const FLAG_LIST = [
 const flags = Object.fromEntries(FLAG_LIST.map((item) => [item.key, true]))
 
 const teams = [
-  { id: 'blue', name: 'Blue force', color: '#3caf72', icon: 'shield' },
-  { id: 'red', name: 'Red force', color: '#d45b4a', icon: 'flag' },
+  { id: 'blue', name: 'Blue force', swatchId: 'blue', themeId: 'field-night', icon: 'shield' },
+  { id: 'red', name: 'Red force', swatchId: 'red', themeId: 'watch-night', icon: 'flag' },
 ]
+
+registerTeamThemes((teamId) => teams.find((item) => item.id === teamId)?.themeId || null)
 
 const roles = [
   { id: 'control', name: 'Exercise control' },
@@ -70,8 +76,8 @@ let graphics = [
     teamId: 'blue',
     geometry: { type: 'Polygon', coordinates: [[[81.2, 26.2], [82.0, 26.2], [82.0, 25.6], [81.2, 25.6], [81.2, 26.2]]] },
     properties: {
-      strokeColor: '#d4b15a',
-      fillColor: '#d4b15a',
+      strokeColor: marks.objective,
+      fillColor: marks.objective,
       strokeWidth: 2,
       fillOpacity: 0.2,
       sharedWith: [],
@@ -104,7 +110,7 @@ const scenario = {
     {
       id: 'track-1',
       name: 'Blue lead',
-      color: '#3caf72',
+      color: swatchById('blue').color,
       track: [
         { t: 0, lon: 80.2, lat: 26.4 },
         { t: 30, lon: 80.6, lat: 26.1 },
@@ -289,7 +295,26 @@ export function snapshot(userId) {
     navigation: access ? navigationFor(access) : [],
     opacity: { ...opacity },
     features: clone(features),
-    teams: clone(teams),
+    teams: teams.map((team) => ({
+      id: team.id,
+      name: team.name,
+      icon: team.icon,
+      swatchId: team.swatchId,
+      themeId: team.themeId,
+      color: swatchById(team.swatchId)?.color || '',
+    })),
+    swatches: swatches.map((item) => ({
+      id: item.id,
+      name: item.name,
+      color: item.color,
+      takenBy: teams.find((team) => team.swatchId === item.id)?.id || null,
+    })),
+    themeChoices: palettes.map((item) => ({
+      id: item.id,
+      name: item.name,
+      takenBy: teams.find((team) => team.themeId === item.id)?.id || null,
+    })),
+    marks: { halo: marks.halo, outline: marks.outline, objective: marks.objective, replay: marks.replay },
     roles: clone(roles),
     users: listDirectoryUsers(),
     graphics: clone(graphics),
@@ -517,8 +542,8 @@ export function createGraphic(userId, draft) {
       teamId: draft.teamId || '',
       geometry: clone(draft.geometry),
       properties: {
-        strokeColor: '#d4b15a',
-        fillColor: '#d4b15a',
+        strokeColor: marks.objective,
+        fillColor: marks.objective,
         strokeWidth: 2,
         fillOpacity: 0.25,
         sharedWith: [],
@@ -847,23 +872,49 @@ export function deleteCatalogue(userId, featureId) {
   return deleteFeature(userId, featureId)
 }
 
+function heldBy(field, value, exceptId) {
+  return teams.find((team) => team[field] === value && team.id !== exceptId) || null
+}
+
 export function saveTeam(userId, draft) {
   requireAdmin(userId)
   requireFlag('adminPanel')
   const name = requireName(draft?.name, 'team.rejected')
+  const swatch = swatchById(draft?.swatchId)
+  const theme = palettes.find((item) => item.id === draft?.themeId)
+  if (!swatch) fail('team.rejected', { userId }, 'Choose a map colour.', 'VALIDATION')
+  if (!theme) fail('team.rejected', { userId }, 'Choose a theme.', 'VALIDATION')
+  const exceptId = draft.id || null
+  const swatchOwner = heldBy('swatchId', swatch.id, exceptId)
+  if (swatchOwner) fail('team.rejected', { userId, swatchId: swatch.id }, `${swatch.name} is already used by ${swatchOwner.name}.`, 'CONFLICT')
+  const themeOwner = heldBy('themeId', theme.id, exceptId)
+  if (themeOwner) fail('team.rejected', { userId, themeId: theme.id }, `${theme.name} is already used by ${themeOwner.name}.`, 'CONFLICT')
   if (draft.id) {
     const team = teams.find((item) => item.id === draft.id)
     if (!team) fail('team.rejected', { userId }, 'That team is no longer in the exercise.', 'NOT_FOUND')
     team.name = name
-    if (draft.color) team.color = draft.color
+    team.swatchId = swatch.id
+    team.themeId = theme.id
     if (draft.icon) team.icon = draft.icon
   } else {
     const id = String(draft.newId || '').trim().toLowerCase()
     if (!/^[a-z][a-z0-9-]{1,20}$/.test(id)) fail('team.rejected', { userId }, 'Use a short team id, starting with a letter.', 'VALIDATION')
     if (teams.some((item) => item.id === id)) fail('team.rejected', { userId }, 'That team id is already used.', 'CONFLICT')
-    teams.push({ id, name, color: draft.color || '#8eb7e0', icon: draft.icon || 'shield' })
+    teams.push({ id, name, swatchId: swatch.id, themeId: theme.id, icon: draft.icon || 'shield' })
   }
-  logger.info('team.saved', { userId, teamId: draft.id || draft.newId })
+  logger.info('team.saved', { userId, teamId: draft.id || draft.newId, swatchId: swatch.id, themeId: theme.id })
+  return snapshot(userId)
+}
+
+export function assignUserTeam(userId, targetId, teamId) {
+  requireAdmin(userId)
+  requireFlag('adminPanel')
+  if (targetId === 'apex') fail('user.rejected', { userId, targetId }, 'APEX is not on a team.', 'FORBIDDEN')
+  if (!teams.some((item) => item.id === teamId)) fail('user.rejected', { userId, teamId }, 'That team is not in the exercise.', 'NOT_FOUND')
+  const result = setAppointmentTeam(targetId, teamId)
+  if (result === 'PROTECTED') fail('user.rejected', { userId, targetId }, 'APEX is not on a team.', 'FORBIDDEN')
+  if (result === 'MISSING') fail('user.rejected', { userId, targetId }, 'That user is no longer in the directory.', 'NOT_FOUND')
+  logger.info('user.team_assigned', { userId, targetId, teamId })
   return snapshot(userId)
 }
 
@@ -912,6 +963,10 @@ export function saveUser(userId, draft) {
   requireFlag('adminPanel')
   const title = requireName(draft?.title, 'user.rejected')
   if (!draft?.role || !draft?.service) fail('user.rejected', { userId }, 'Enter the role and the service.', 'VALIDATION')
+  if (!draft.id) {
+    if (!draft.teamId) fail('user.rejected', { userId }, 'Choose a team.', 'VALIDATION')
+    if (!teams.some((item) => item.id === draft.teamId)) fail('user.rejected', { userId, teamId: draft.teamId }, 'That team is not in the exercise.', 'NOT_FOUND')
+  }
   if (draft.id) {
     if (!updateDirectoryUser(draft.id, { title, role: draft.role, service: draft.service })) {
       fail('user.rejected', { userId, id: draft.id }, 'That user cannot be changed.', 'FORBIDDEN')
@@ -919,7 +974,7 @@ export function saveUser(userId, draft) {
   } else {
     const id = String(draft.newId || '').trim().toLowerCase()
     if (!/^[a-z][a-z0-9-]{1,20}$/.test(id)) fail('user.rejected', { userId }, 'Use a short user id, starting with a letter.', 'VALIDATION')
-    if (!addDirectoryUser({ id, title, role: draft.role, service: draft.service })) fail('user.rejected', { userId }, 'That user id is already used.', 'CONFLICT')
+    if (!addDirectoryUser({ id, title, role: draft.role, service: draft.service, teamId: draft.teamId })) fail('user.rejected', { userId }, 'That user id is already used.', 'CONFLICT')
   }
   logger.info('user.saved', { userId, id: draft.id || draft.newId })
   return snapshot(userId)

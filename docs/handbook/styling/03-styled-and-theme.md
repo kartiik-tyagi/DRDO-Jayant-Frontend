@@ -53,19 +53,24 @@ alpha(theme.palette.common.black, 0.4)
 
 ## What `createAppTheme` already sets
 
-`src/shared/theme/createAppTheme.js` builds the theme from the appointment’s theme object.
+`src/shared/theme/createAppTheme.js` maps one catalog row onto Material. It does not invent colours. The twenty rows live in `src/shared/theme/palettes.js`. Map swatches and the picture inks live in `src/shared/theme/swatches.js`. Screens use palette paths, or a colour the snapshot already filled from a swatch.
+
+A team stores a swatch id and a theme id. Another team cannot take either. Deleting the team frees both. Everyone on that team receives that theme at sign-in and cannot change it. APEX has no team. He keeps his own theme id and may choose any of the twenty, including one a team holds. His choice does not mark the theme taken. Before anyone is signed in, and when a team has no theme yet, the screen uses Field, night.
+
+Each row already says light or dark. There is no second mode switch. Font stays Roboto. Corner radius stays 8. The catalog checks contrast when it loads and throws if a row is below 4.5 to 1.
 
 | Piece | Rule in this app |
 | --- | --- |
-| `palette.mode` | `'light'` or `'dark'` from the fixture |
-| `palette.primary.main` | The appointment colour, default `#3caf72` |
-| `palette.primary.contrastText` | The text on a contained primary button. Field uses `#062116` on `#3caf72`. Night uses `#0c1218` on `#8eb7e0`. Sand uses `#fffdf8` on `#5a4616`. |
-| `palette.text.primary` / `secondary` | Body copy. Do not also set `color` inside a typography variant. |
+| `palette.mode` | `'light'` or `'dark'` from the catalog row |
+| `palette.primary.main` | The row’s action colour. `secondary` is the same colour. |
+| `palette.primary.contrastText` | The text on that action colour. The catalog checks it. |
+| `palette.text.primary` / `secondary` | Body and caption. Do not also set `color` inside a typography variant. |
+| `palette.error`, `warning`, `success`, `info` | Status colours from the same row, with their contrast text. |
 | `typography.fontFamily` | Roboto, then Segoe UI |
 | `typography.button.textTransform` | `'none'` so buttons are not forced into capitals |
-| `shape.borderRadius` | 8, unless the fixture sets one |
+| `shape.borderRadius` | 8 |
 | `MuiIconButton` | Minimum 40 by 40. It must not force `color`. |
-| `MuiCssBaseline` body | Background and text colour |
+| `MuiCssBaseline` body | Background and text colour from the row |
 
 `ThemeBridge` memoizes that theme and wraps the tree:
 
@@ -97,4 +102,4 @@ Do not set `color` on `MuiTypography` variants in this object. It overrides the 
 
 ## CSS variables mode
 
-`createTheme({ cssVariables: true, colorSchemes: { light: ..., dark: ... } })` is a different theme shape. This app passes `palette` and leaves `cssVariables` off, so it behaves as a single palette per `ThemeProvider`. Switching night and field is a new theme object from `ThemeBridge`, not `useColorScheme`. Leave `cssVariables` off unless you retest every screen.
+`createTheme({ cssVariables: true, colorSchemes: { light: ..., dark: ... } })` is a different theme shape. This app passes `palette` and leaves `cssVariables` off, so it behaves as a single palette per `ThemeProvider`. Changing theme is a new catalog row through `ThemeBridge`, not `useColorScheme`. Leave `cssVariables` off unless you retest every screen.
