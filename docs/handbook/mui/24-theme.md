@@ -1,6 +1,6 @@
 # Theme
 
-`createAppTheme` in `src/shared/theme/createAppTheme.js` maps one catalog row onto Material. `ThemeBridge` uses the signed-in appointment’s row, and the login context row before that. The rows live in `src/shared/theme/palettes.js`. Do not add a colour in a screen. A team locks one theme and one map swatch. APEX may wear any theme, including one a team holds, and that does not mark it taken.
+`createAppTheme` in `src/shared/theme/createAppTheme.js` maps one catalog row onto Material. `ThemeBridge` uses the signed-in appointment’s row, and the login context row before that. Each theme is its own file under `src/shared/theme/palette/`. `src/shared/theme/palettes.js` only gathers them. Do not add a colour in a screen. A team locks one theme and one map swatch. APEX may wear any theme, including one a team holds, and that does not mark it taken.
 
 ```js
 import { createTheme } from '@mui/material/styles'
