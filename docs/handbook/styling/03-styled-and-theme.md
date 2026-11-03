@@ -57,16 +57,16 @@ alpha(theme.palette.common.black, 0.4)
 
 A team stores a swatch id and a theme id. Another team cannot take either. Deleting the team frees both. Everyone on that team receives that theme at sign-in and cannot change it. APEX has no team. He keeps his own theme id and may choose any of the twenty, including one a team holds. His choice does not mark the theme taken. Before anyone is signed in, and when a team has no theme yet, the screen uses Pine, night.
 
-Each row already says light or dark. There is no second mode switch. Font stays Roboto. Corner radius stays 8. The catalog checks contrast when it loads and throws if a row is below 4.5 to 1.
+Each row already says light or dark. There is no second mode switch. Every row carries the Roboto weights that are actually loaded (300, 400, 500, 700), the body, caption, and quiet text, and its own error, warning, success, and info colours for that mode. Corner radius stays 8. The catalog checks contrast when it loads and throws if body, caption, action, or status text is below 4.5 to 1. Quiet text stays readable, and softer than the caption.
 
 | Piece | Rule in this app |
 | --- | --- |
 | `palette.mode` | `'light'` or `'dark'` from the catalog row |
 | `palette.primary.main` | The row’s action colour. `secondary` is the same colour. |
 | `palette.primary.contrastText` | The text on that action colour. The catalog checks it. |
-| `palette.text.primary` / `secondary` | Body and caption. Do not also set `color` inside a typography variant. |
-| `palette.error`, `warning`, `success`, `info` | Status colours from the same row, with their contrast text. |
-| `typography.fontFamily` | Roboto, then Segoe UI |
+| `palette.text.primary` / `secondary` / `disabled` | Body, caption, and quiet text. Do not also set `color` inside a typography variant. |
+| `palette.error`, `warning`, `success`, `info` | Status colours from that same row and mode, with their contrast text. |
+| `typography.fontFamily` | Roboto, then Segoe UI. Weights are 300, 400, 500, and 700. |
 | `typography.button.textTransform` | `'none'` so buttons are not forced into capitals |
 | `shape.borderRadius` | 8 |
 | `MuiIconButton` | Minimum 40 by 40. It must not force `color`. |
