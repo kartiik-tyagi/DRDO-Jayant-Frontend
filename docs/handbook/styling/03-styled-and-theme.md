@@ -53,7 +53,7 @@ alpha(theme.palette.common.black, 0.4)
 
 ## What `createAppTheme` already sets
 
-`src/shared/theme/createAppTheme.js` maps one catalog row onto Material. It does not invent colours. The twenty rows live in `src/shared/theme/palettes.js`. Map swatches and the picture inks live in `src/shared/theme/swatches.js`. Screens use palette paths, or a colour the snapshot already filled from a swatch.
+`src/shared/theme/createAppTheme.js` maps one catalog row onto Material. It does not invent colours. Each theme is its own file under `src/shared/theme/palette/` (for example `pine/night.js` and `pine/day.js`). `src/shared/theme/palettes.js` only gathers them. Map swatches and the picture inks live in `src/shared/theme/swatches.js`. Screens use palette paths, or a colour the snapshot already filled from a swatch.
 
 A team stores a swatch id and a theme id. Another team cannot take either. Deleting the team frees both. Everyone on that team receives that theme at sign-in and cannot change it. APEX has no team. He keeps his own theme id and may choose any of the twenty, including one a team holds. His choice does not mark the theme taken. Before anyone is signed in, and when a team has no theme yet, the screen uses Pine, night.
 
