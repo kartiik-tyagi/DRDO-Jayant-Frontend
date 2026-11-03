@@ -37,7 +37,7 @@ A refresh forgets a changed password, because the map lives in the module. That 
 
 Grants also filter which map layers, resources, and plans the session contains. A maritime session does not receive the boundaries layer or the air plan. The directory menu hides administration unless `grant.admin` is true.
 
-Default themes on the user record: APEX, Western Theatre, Air, and Navy start on Night watch. The others start on Field. The menu can switch among Field, Night watch, and Sand for the current tab only.
+APEX starts on Cobalt, night and may choose any of the twenty catalog themes from the profile menu. That choice stays on his record. CoSC and the theatre appointments sit on Blue force, which uses Pine, night. Eastern Air Command and Western Naval Command sit on Red force, which uses Cobalt, night. They cannot change the theme.
 
 ## Sign-in
 

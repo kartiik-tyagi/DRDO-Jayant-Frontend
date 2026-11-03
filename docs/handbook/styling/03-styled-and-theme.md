@@ -55,7 +55,7 @@ alpha(theme.palette.common.black, 0.4)
 
 `src/shared/theme/createAppTheme.js` maps one catalog row onto Material. It does not invent colours. The twenty rows live in `src/shared/theme/palettes.js`. Map swatches and the picture inks live in `src/shared/theme/swatches.js`. Screens use palette paths, or a colour the snapshot already filled from a swatch.
 
-A team stores a swatch id and a theme id. Another team cannot take either. Deleting the team frees both. Everyone on that team receives that theme at sign-in and cannot change it. APEX has no team. He keeps his own theme id and may choose any of the twenty, including one a team holds. His choice does not mark the theme taken. Before anyone is signed in, and when a team has no theme yet, the screen uses Field, night.
+A team stores a swatch id and a theme id. Another team cannot take either. Deleting the team frees both. Everyone on that team receives that theme at sign-in and cannot change it. APEX has no team. He keeps his own theme id and may choose any of the twenty, including one a team holds. His choice does not mark the theme taken. Before anyone is signed in, and when a team has no theme yet, the screen uses Pine, night.
 
 Each row already says light or dark. There is no second mode switch. Font stays Roboto. Corner radius stays 8. The catalog checks contrast when it loads and throws if a row is below 4.5 to 1.
 
