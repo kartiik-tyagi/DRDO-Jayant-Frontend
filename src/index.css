@@ -6,7 +6,10 @@ body,
   overflow: hidden;
 }
 
-.situation-map {
+.situation-map,
+.situation-map .ol-control,
+.situation-map .ol-scale-line,
+.situation-map .ol-attribution {
   font-family: "Roboto", "Segoe UI", sans-serif;
 }
 

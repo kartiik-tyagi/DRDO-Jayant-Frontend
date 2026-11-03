@@ -19,6 +19,7 @@ const themeSchema = z.object({
   backgroundPaper: z.string(),
   textPrimary: z.string(),
   textSecondary: z.string(),
+  textDisabled: z.string(),
   divider: z.string(),
   error: z.string(),
   errorContrast: z.string(),
@@ -29,6 +30,10 @@ const themeSchema = z.object({
   info: z.string(),
   infoContrast: z.string(),
   fontFamily: z.string(),
+  fontWeightLight: z.number(),
+  fontWeightRegular: z.number(),
+  fontWeightMedium: z.number(),
+  fontWeightBold: z.number(),
   borderRadius: z.number(),
 })
 

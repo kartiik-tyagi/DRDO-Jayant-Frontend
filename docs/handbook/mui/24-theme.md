@@ -43,7 +43,7 @@ Passing `palette` without `cssVariables` keeps a single scheme, which is what `T
 | `error.main`, `success.main`, `warning.main`, `info.main` | Alerts and chips. Defaults exist if you do not set them. |
 | `action.hover`, `action.selected` | List hover and the selected row |
 
-`contrastText` must be readable on `main`. The catalog checks body text, caption text, and action text at load and throws if a row is below 4.5 to 1. Do not pick a new action colour in a component.
+`contrastText` must be readable on `main`. The catalog checks body, caption, action, and status text at load and throws if a row is below 4.5 to 1. Do not pick a new action or status colour in a component.
 
 `palette.mode` is `'light'` or `'dark'` and already lives on the catalog row. This app sets text and background from that row, so mode alone is not the whole story.
 
@@ -53,12 +53,12 @@ Set size, weight, and line height. Do not set `color` on a variant. A colour the
 
 ```js
 typography: {
-  h6: { fontSize: '1.05rem', fontWeight: 600 },
+  h6: { fontSize: '1.05rem', fontWeight: 500 },
   body2: { lineHeight: 1.45 },
 }
 ```
 
-Roboto is loaded in `main.jsx` from `@fontsource/roboto` at 300, 400, 500, and 700. A weight you do not import falls back to another weight. 600 is requested for headings. The installed files are 300, 400, 500, and 700, so 600 synthesizes or falls back. That is acceptable. Do not add a network font.
+Roboto is loaded in `main.jsx` from `@fontsource/roboto` at 300, 400, 500, and 700. The catalog uses those weights only. Headings use 700 or 500. Do not request 600, and do not add a network font.
 
 ## Component overrides
 
