@@ -1,52 +1,25 @@
-const fieldTheme = {
-  id: 'field',
-  name: 'Field',
-  mode: 'dark',
-  primary: '#3caf72',
-  primaryContrast: '#062116',
-  secondary: '#d4b15a',
-  secondaryContrast: '#1c1914',
-  backgroundDefault: '#0d1411',
-  backgroundPaper: '#16211c',
-  textPrimary: '#e8f0ea',
-  textSecondary: '#b7c6bd',
-  divider: 'rgba(232, 240, 234, 0.16)',
-  fontFamily: '"Roboto", "Segoe UI", sans-serif',
-  borderRadius: 8,
+import { logger } from '../lib/logger'
+import { loginPalette, paletteById, palettes } from '../theme/palettes'
+
+let teamThemeId = () => null
+
+export function registerTeamThemes(lookup) {
+  teamThemeId = lookup
 }
 
-const nightTheme = {
-  id: 'night',
-  name: 'Night watch',
-  mode: 'dark',
-  primary: '#8eb7e0',
-  primaryContrast: '#0c1218',
-  secondary: '#d4b15a',
-  secondaryContrast: '#1c1914',
-  backgroundDefault: '#0c1218',
-  backgroundPaper: '#152033',
-  textPrimary: '#e7eef6',
-  textSecondary: '#b7c6d6',
-  divider: 'rgba(231, 238, 246, 0.16)',
-  fontFamily: '"Roboto", "Segoe UI", sans-serif',
-  borderRadius: 8,
-}
-
-const sandTheme = {
-  id: 'sand',
-  name: 'Sand',
-  mode: 'light',
-  primary: '#5a4616',
-  primaryContrast: '#fffdf8',
-  secondary: '#1f6b45',
-  secondaryContrast: '#f7fbf8',
-  backgroundDefault: '#f4f0e6',
-  backgroundPaper: '#fffdf8',
-  textPrimary: '#1c1914',
-  textSecondary: '#5c564c',
-  divider: 'rgba(28, 25, 20, 0.14)',
-  fontFamily: '"Roboto", "Segoe UI", sans-serif',
-  borderRadius: 8,
+function themeFor(user) {
+  const fallback = paletteById('field-night')
+  if (user.id === 'apex') {
+    const theme = paletteById(user.themeId)
+    if (theme) return theme
+    logger.warn('theme.unassigned', { userId: user.id, themeId: user.themeId || null })
+    return fallback
+  }
+  const themeId = user.teamId ? teamThemeId(user.teamId) : null
+  const theme = paletteById(themeId)
+  if (theme) return theme
+  logger.warn('theme.unassigned', { userId: user.id, teamId: user.teamId || null, themeId: themeId || null })
+  return fallback
 }
 
 export const DEMO_PASSWORD = '123'
@@ -64,23 +37,6 @@ export function changePassword(userId, currentPassword, nextPassword) {
   if (nextPassword === (passwords.get(userId) || DEMO_PASSWORD)) return 'SAME'
   passwords.set(userId, nextPassword)
   return 'OK'
-}
-
-export const themes = [fieldTheme, nightTheme, sandTheme]
-
-export const exerciseTheme = {
-  mode: fieldTheme.mode,
-  primary: fieldTheme.primary,
-  primaryContrast: fieldTheme.primaryContrast,
-  secondary: fieldTheme.secondary,
-  secondaryContrast: fieldTheme.secondaryContrast,
-  backgroundDefault: fieldTheme.backgroundDefault,
-  backgroundPaper: fieldTheme.backgroundPaper,
-  textPrimary: fieldTheme.textPrimary,
-  textSecondary: fieldTheme.textSecondary,
-  divider: fieldTheme.divider,
-  fontFamily: fieldTheme.fontFamily,
-  borderRadius: fieldTheme.borderRadius,
 }
 
 const mapFilters = [
@@ -183,18 +139,51 @@ export function accessFor(userId) {
 }
 
 export function listDirectoryUsers() {
-  return users.map(({ id, title, role, service, avatarUrl }) => ({ id, title, role, service, avatarUrl }))
+  return users.map(({ id, title, role, service, avatarUrl, teamId }) => ({
+    id,
+    title,
+    role,
+    service,
+    avatarUrl,
+    teamId: teamId || null,
+  }))
+}
+
+export function appointmentRecord(userId) {
+  const user = users.find((item) => item.id === userId)
+  if (!user) return null
+  return { id: user.id, themeId: user.themeId || null, teamId: user.teamId || null }
+}
+
+export function setAppointmentTheme(userId, themeId) {
+  const user = users.find((item) => item.id === userId)
+  if (!user || user.id !== 'apex') return false
+  user.themeId = themeId
+  try {
+    sessionStorage.setItem('jayant.apexTheme', themeId)
+  } catch (error) {
+    logger.warn('theme.storage_unavailable', { message: error?.message || 'storage unavailable' })
+  }
+  return true
+}
+
+export function setAppointmentTeam(id, teamId) {
+  const user = users.find((item) => item.id === id)
+  if (!user) return 'MISSING'
+  if (user.id === 'apex') return 'PROTECTED'
+  user.teamId = teamId
+  return 'OK'
 }
 
 export function addDirectoryUser(user) {
-  if (!user?.id || users.some((item) => item.id === user.id)) return false
+  if (!user?.id || !user.teamId || users.some((item) => item.id === user.id)) return false
   users.push({
     id: user.id,
     title: user.title,
     role: user.role,
     service: user.service,
     avatarUrl: '/avatars/corps.svg',
-    themeId: 'field',
+    teamId: user.teamId,
     grant: 'theatre',
   })
   return true
@@ -218,15 +207,23 @@ export function removeDirectoryUser(id) {
 }
 
 const users = [
-  { id: 'apex', title: 'APEX', role: 'Exercise control', service: 'Control', avatarUrl: '/avatars/apex.svg', themeId: 'night', grant: 'apex' },
-  { id: 'cosc', title: 'CoSC', role: 'Joint direction', service: 'Joint', avatarUrl: '/avatars/cosc.svg', themeId: 'field', grant: 'direction' },
-  { id: 'etc', title: 'Eastern Theatre Commander', role: 'Theatre picture', service: 'Joint', avatarUrl: '/avatars/east.svg', themeId: 'field', grant: 'theatre' },
-  { id: 'wtc', title: 'Western Theatre Commander', role: 'Theatre picture', service: 'Joint', avatarUrl: '/avatars/west.svg', themeId: 'night', grant: 'theatre' },
-  { id: 'ntc', title: 'Northern Theatre Commander', role: 'Theatre picture', service: 'Joint', avatarUrl: '/avatars/north.svg', themeId: 'field', grant: 'theatre' },
-  { id: 'esc', title: 'Eastern Strike Corps Commander', role: 'Corps picture', service: 'Army', avatarUrl: '/avatars/corps.svg', themeId: 'field', grant: 'theatre' },
-  { id: 'aoc', title: 'Eastern Air Command AoC', role: 'Air picture', service: 'Air', avatarUrl: '/avatars/air.svg', themeId: 'night', grant: 'air' },
-  { id: 'foc', title: 'Western Naval Command FoC', role: 'Maritime picture', service: 'Navy', avatarUrl: '/avatars/navy.svg', themeId: 'night', grant: 'maritime' },
+  { id: 'apex', title: 'APEX', role: 'Exercise control', service: 'Control', avatarUrl: '/avatars/apex.svg', themeId: 'watch-night', grant: 'apex' },
+  { id: 'cosc', title: 'CoSC', role: 'Joint direction', service: 'Joint', avatarUrl: '/avatars/cosc.svg', teamId: 'blue', grant: 'direction' },
+  { id: 'etc', title: 'Eastern Theatre Commander', role: 'Theatre picture', service: 'Joint', avatarUrl: '/avatars/east.svg', teamId: 'blue', grant: 'theatre' },
+  { id: 'wtc', title: 'Western Theatre Commander', role: 'Theatre picture', service: 'Joint', avatarUrl: '/avatars/west.svg', teamId: 'blue', grant: 'theatre' },
+  { id: 'ntc', title: 'Northern Theatre Commander', role: 'Theatre picture', service: 'Joint', avatarUrl: '/avatars/north.svg', teamId: 'blue', grant: 'theatre' },
+  { id: 'esc', title: 'Eastern Strike Corps Commander', role: 'Corps picture', service: 'Army', avatarUrl: '/avatars/corps.svg', teamId: 'blue', grant: 'theatre' },
+  { id: 'aoc', title: 'Eastern Air Command AoC', role: 'Air picture', service: 'Air', avatarUrl: '/avatars/air.svg', teamId: 'red', grant: 'air' },
+  { id: 'foc', title: 'Western Naval Command FoC', role: 'Maritime picture', service: 'Navy', avatarUrl: '/avatars/navy.svg', teamId: 'red', grant: 'maritime' },
 ]
+
+try {
+  const remembered = sessionStorage.getItem('jayant.apexTheme')
+  const apex = users.find((item) => item.id === 'apex')
+  if (apex && paletteById(remembered)) apex.themeId = remembered
+} catch (error) {
+  logger.warn('theme.storage_unreadable', { message: error?.message || 'storage unavailable' })
+}
 
 export const scenarios = [
   { id: 'northern', name: 'Northern Approach' },
@@ -320,7 +317,7 @@ const exerciseMeta = {
   accessNotice: 'Authorised users only',
   backgroundImage: '/login-background.png',
   passwordHint: 'Exercise access: 123',
-  theme: exerciseTheme,
+  theme: loginPalette,
   users: users.map(({ id, title, role, service, avatarUrl }) => ({ id, title, role, service, avatarUrl })),
 }
 
@@ -342,7 +339,8 @@ export function sessionFor(userId) {
   const user = users.find((item) => item.id === userId)
   if (!user) return null
   const grant = grants[user.grant]
-  const theme = themes.find((item) => item.id === user.themeId) || themes[0]
+  const theme = themeFor(user)
+  const canSelectTheme = user.id === 'apex'
   const { scenario, game } = currentExercise()
   return {
     profile: {
@@ -353,7 +351,8 @@ export function sessionFor(userId) {
       avatarUrl: user.avatarUrl,
     },
     theme,
-    themes,
+    themes: canSelectTheme ? palettes : [theme],
+    canSelectTheme,
     scenarios: scenarios.map((item) => ({ ...item, active: item.id === scenario.id })),
     selectedScenarioId: scenario.id,
     activeScenarioId: scenario.id,

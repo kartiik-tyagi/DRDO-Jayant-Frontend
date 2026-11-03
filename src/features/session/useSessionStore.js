@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import dayjs from 'dayjs'
-import { ApiError, changeGame as requestGameChange, changeScenario as requestScenarioChange, resumeSession } from '../../shared/api/client'
+import { ApiError, changeGame as requestGameChange, changeScenario as requestScenarioChange, resumeSession, setApexTheme } from '../../shared/api/client'
 import { logger } from '../../shared/lib/logger'
 import { clearSessionKey, readSessionKey, writeSessionKey } from '../../shared/lib/sessionKey'
 
@@ -136,12 +136,11 @@ export const useSessionStore = create((set, get) => ({
       return { session: { ...state.session, activeGame: { id: result.activeGameId, name: result.name } } }
     })
   },
-  setTheme: (themeId) =>
-    set((state) => {
-      const theme = state.session?.themes.find((item) => item.id === themeId)
-      if (!theme) return state
-      return { session: { ...state.session, theme } }
-    }),
+  chooseTheme: async (themeId) => {
+    const userId = get().session?.profile?.id
+    const theme = await setApexTheme({ userId, themeId })
+    set((state) => (state.session ? { session: { ...state.session, theme } } : state))
+  },
   setFilter: (id, visible) =>
     set((state) => {
       if (!state.session?.filters.some((filter) => filter.id === id)) return state

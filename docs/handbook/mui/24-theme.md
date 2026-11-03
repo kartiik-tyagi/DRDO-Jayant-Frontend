@@ -1,6 +1,6 @@
 # Theme
 
-`createAppTheme` in `src/shared/theme/createAppTheme.js` is the theme this app uses. `ThemeBridge` rebuilds it when the signed-in appointment has a theme, and falls back to the login context theme. Edit that function to change every screen. Edit `sx` to change one component.
+`createAppTheme` in `src/shared/theme/createAppTheme.js` maps one catalog row onto Material. `ThemeBridge` uses the signed-in appointment’s row, and the login context row before that. The rows live in `src/shared/theme/palettes.js`. Do not add a colour in a screen. A team locks one theme and one map swatch. APEX may wear any theme, including one a team holds, and that does not mark it taken.
 
 ```js
 import { createTheme } from '@mui/material/styles'
@@ -28,7 +28,7 @@ const theme = createTheme({
 })
 ```
 
-Passing `palette` without `cssVariables` keeps a single scheme, which is what `ThemeBridge` does. Night and field are two calls, two theme objects, not a toggle inside one CSS-variable theme.
+Passing `palette` without `cssVariables` keeps a single scheme, which is what `ThemeBridge` does. Each catalog row is one theme object. Day and night are separate rows, not a toggle inside one CSS-variable theme.
 
 ## Palette
 
@@ -43,9 +43,9 @@ Passing `palette` without `cssVariables` keeps a single scheme, which is what `T
 | `error.main`, `success.main`, `warning.main`, `info.main` | Alerts and chips. Defaults exist if you do not set them. |
 | `action.hover`, `action.selected` | List hover and the selected row |
 
-`contrastText` must be readable on `main`. Field is `#062116` on `#3caf72`. Night is `#0c1218` on `#8eb7e0`. Sand is `#fffdf8` on `#5a4616`. A white label on sand’s primary disappears.
+`contrastText` must be readable on `main`. The catalog checks body text, caption text, and action text at load and throws if a row is below 4.5 to 1. Do not pick a new action colour in a component.
 
-`palette.mode` is `'light'` or `'dark'`. It changes the default text and background when you do not override them. This app overrides them from the fixture, so mode alone is not the whole story. Set the text colours explicitly, as `createAppTheme` does.
+`palette.mode` is `'light'` or `'dark'` and already lives on the catalog row. This app sets text and background from that row, so mode alone is not the whole story.
 
 ## Typography in the theme
 
@@ -95,4 +95,4 @@ A second `ThemeProvider` under the first replaces the theme for its children. Yo
 
 ## What not to turn on
 
-`cssVariables: true` and `colorSchemes` change how palette paths resolve. This app does not use them. Turning them on without retesting every layout will desync the map background, the login wash, and the contrast text. Switch themes by passing a new object to `createAppTheme`, which is already the path in `ThemeBridge`.
+`cssVariables: true` and `colorSchemes` change how palette paths resolve. This app does not use them. Turning them on without retesting every layout will desync the map ground, the login wash, and the contrast text. Switch themes by passing another catalog row to `createAppTheme`, which is already the path in `ThemeBridge`. APEX chooses his row from the profile menu. That choice is written on his record, so a refresh keeps it. Everyone else keeps the theme stored on their team.

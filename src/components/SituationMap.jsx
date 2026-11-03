@@ -135,7 +135,7 @@ export default function SituationMap({ view, serviceUrl, layers, resetToken, onP
       className="situation-map"
       role="application"
       aria-label="Situation map"
-      sx={{ position: 'absolute', inset: 0 }}
+      sx={{ position: 'absolute', inset: 0, bgcolor: 'background.default' }}
     />
   )
 }
