@@ -214,8 +214,8 @@ sx={{ width: { xs: '100%', sm: 300 } }}
 - Do not set `color` inside a typography variant in `createTheme`. It fights the palette and has produced unreadable text. Set colour on the palette and on the component.
 - `MuiIconButton` style overrides must not force `color`. A forced colour hides the theme contrast.
 - This version of `Typography` has no `display` prop. A block line is `sx={{ display: 'block' }}`, or `component="div"`.
-- Primary contrast must be readable on the primary button. Field is `#3caf72` with contrast `#062116`. Night is `#8eb7e0` with `#0c1218`. Sand is `#5a4616` with `#fffdf8`.
-- Change colours in `fixtures.js` theme objects and in `createAppTheme`, not by painting one layout.
+- Action text must stay readable on the action colour. The catalog in `src/shared/theme/palettes.js` is Pine, Cobalt, Amber, Graphite, Lagoon, Iris, Copper, Moss, Crimson, and High contrast, each as a day row and a night row. The module throws if body, caption, or action text falls below 4.5 to 1.
+- Change a colour in that catalog, not in a screen and not in `fixtures.js`.
 
 ### Icons
 
