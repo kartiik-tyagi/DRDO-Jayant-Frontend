@@ -3,10 +3,13 @@ body,
 #root {
   height: 100%;
   margin: 0;
+  overflow: hidden;
 }
 
-.situation-map {
-  background: #102018;
+.situation-map,
+.situation-map .ol-control,
+.situation-map .ol-scale-line,
+.situation-map .ol-attribution {
   font-family: "Roboto", "Segoe UI", sans-serif;
 }
 
