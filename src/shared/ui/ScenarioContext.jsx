@@ -10,24 +10,35 @@ import {
   MenuItem,
   Stack,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material'
+import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined'
+import SportsEsportsOutlinedIcon from '@mui/icons-material/SportsEsportsOutlined'
 import { useSessionStore } from '../../features/session/useSessionStore'
 
-function Fact({ label, children }) {
+function Mark({ label, children }) {
   return (
-    <Box sx={{ minWidth: 0 }}>
-      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.2 }}>
-        {label}
-      </Typography>
+    <Tooltip title={label}>
+      <Box component="span" sx={{ display: 'inline-flex', color: 'text.secondary', flexShrink: 0 }} aria-hidden>
+        {children}
+      </Box>
+    </Tooltip>
+  )
+}
+
+function Fact({ label, icon, children }) {
+  return (
+    <Box sx={{ minWidth: 0, display: 'flex', alignItems: 'center', gap: 0.75 }}>
+      <Mark label={label}>{icon}</Mark>
       {children}
     </Box>
   )
 }
 
-function Choice({ label, value, options, disabled, onSelect }) {
+function Choice({ label, icon, value, options, disabled, onSelect }) {
   return (
-    <Fact label={label}>
+    <Fact label={label} icon={icon}>
       <TextField
         select
         size="small"
@@ -36,7 +47,7 @@ function Choice({ label, value, options, disabled, onSelect }) {
         disabled={disabled}
         onChange={(event) => onSelect(event.target.value)}
         aria-label={label}
-        sx={{ minWidth: 168, '& .MuiInputBase-root': { minHeight: 36 }, '& .MuiSelect-select': { py: 0.75 } }}
+        sx={{ minWidth: 148, '& .MuiInputBase-root': { minHeight: 36 }, '& .MuiSelect-select': { py: 0.75 } }}
       >
         {options.map((item) => (
           <MenuItem key={item.id} value={item.id} disabled={item.disabled} sx={{ minHeight: 40 }}>
@@ -106,13 +117,14 @@ export function ScenarioContext() {
         {session.canSelectScenario ? (
           <Choice
             label="Scenario"
+            icon={<FlagOutlinedIcon fontSize="small" />}
             value={session.activeScenarioId}
             disabled={busy}
             onSelect={(id) => ask('scenario', id)}
             options={session.scenarios.map((item) => ({ id: item.id, label: item.name }))}
           />
         ) : (
-          <Fact label="Scenario">
+          <Fact label="Scenario" icon={<FlagOutlinedIcon fontSize="small" />}>
             <Typography variant="body2" noWrap>
               {scenario?.name}
             </Typography>
@@ -121,6 +133,7 @@ export function ScenarioContext() {
         {session.canSelectGame ? (
           <Choice
             label="Game"
+            icon={<SportsEsportsOutlinedIcon fontSize="small" />}
             value={session.activeGame.id}
             disabled={busy}
             onSelect={(id) => ask('game', id)}
@@ -131,7 +144,7 @@ export function ScenarioContext() {
             }))}
           />
         ) : (
-          <Fact label="Game">
+          <Fact label="Game" icon={<SportsEsportsOutlinedIcon fontSize="small" />}>
             <Typography variant="body2" noWrap>
               {session.activeGame.name}
             </Typography>

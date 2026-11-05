@@ -29,7 +29,7 @@ function createTileLayer(serviceUrl, filter) {
   return layer
 }
 
-export default function SituationMap({ view, serviceUrl, layers, resetToken, onPointer, onZoom, onView, onMap }) {
+export default function SituationMap({ view, serviceUrl, layers, resetToken, onPointer, onZoom, onView, onMap, focusKey = null, showControls = true, label = 'Situation map' }) {
   const targetRef = useRef(null)
   const mapRef = useRef(null)
   const viewRef = useRef(view)
@@ -57,7 +57,7 @@ export default function SituationMap({ view, serviceUrl, layers, resetToken, onP
     const map = new Map({
       target: targetRef.current,
       layers: [],
-      controls: [new Zoom(), new ScaleLine({ units: 'metric' })],
+      controls: showControls ? [new Zoom(), new ScaleLine({ units: 'metric' })] : [],
       view: new View({
         center: fromLonLat([Number(home.longitude) || 0, Number(home.latitude) || 0]),
         zoom: Number(home.zoom) || 5,
@@ -97,7 +97,7 @@ export default function SituationMap({ view, serviceUrl, layers, resetToken, onP
       map.setTarget(null)
       mapRef.current = null
     }
-  }, [serviceUrl, layerKey])
+  }, [serviceUrl, layerKey, showControls])
 
   useEffect(() => {
     const map = mapRef.current
@@ -129,12 +129,27 @@ export default function SituationMap({ view, serviceUrl, layers, resetToken, onP
     })
   }, [resetToken])
 
+  const focusSeen = useRef(focusKey)
+  useEffect(() => {
+    if (focusKey == null) return
+    if (focusSeen.current === focusKey) return
+    focusSeen.current = focusKey
+    const map = mapRef.current
+    const home = viewRef.current
+    if (!map || !home) return
+    map.getView().animate({
+      center: fromLonLat([Number(home.longitude) || 0, Number(home.latitude) || 0]),
+      zoom: Number(home.zoom) || 5,
+      duration: 350,
+    })
+  }, [focusKey])
+
   return (
     <Box
       ref={targetRef}
       className="situation-map"
       role="application"
-      aria-label="Situation map"
+      aria-label={label}
       sx={{ position: 'absolute', inset: 0, bgcolor: 'background.default' }}
     />
   )

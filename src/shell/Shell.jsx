@@ -6,6 +6,7 @@ import { useChrome } from '../features/session/useChrome'
 import { useSessionStore } from '../features/session/useSessionStore'
 import { ApplicationMenu } from '../shared/ui/ApplicationMenu'
 import { MapToolbar, ShowMapTools } from '../shared/ui/MapToolbar'
+import { MapGrid } from '../shared/ui/MapGrid'
 import { MapStage } from '../shared/ui/MapStage'
 import { StatusFooter } from '../shared/ui/StatusFooter'
 import { ToolDock } from '../shared/ui/ToolDock'
@@ -14,11 +15,14 @@ import { ContextStrip, TopBar } from '../shared/ui/TopBar'
 function Frame() {
   const { panel, closePanel, select } = useChrome()
   const [toolsOpen, setToolsOpen] = useState(true)
+  const [viewMode, setViewMode] = useState('default')
   const [readout, setReadout] = useState(null)
 
   return (
     <Box sx={{ height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column', bgcolor: 'background.default', color: 'text.primary' }}>
       <TopBar
+        viewMode={viewMode}
+        onViewMode={setViewMode}
         leading={
           <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
             <ApplicationMenu presentation="menu" />
@@ -29,7 +33,7 @@ function Frame() {
       <ContextStrip />
       {toolsOpen ? <MapToolbar activeId={panel} onSelect={select} /> : null}
       <Box sx={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
-        <MapStage readout="none" onReadout={setReadout} />
+        {viewMode === 'grid' ? <MapGrid onReadout={setReadout} /> : <MapStage readout="none" onReadout={setReadout} />}
         <ToolDock panel={panel} onClose={closePanel} edge="end" />
       </Box>
       <StatusFooter readout={readout} />

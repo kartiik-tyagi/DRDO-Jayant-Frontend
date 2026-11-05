@@ -296,6 +296,24 @@ export const mapView = {
   maxZoom: 12,
 }
 
+export const plannedCenters = [
+  { id: 'india', name: 'Indian subcontinent', latitude: 24.5, longitude: 82 },
+  { id: 'northern-approach', name: 'Northern Approach', latitude: 26.4, longitude: 80.2 },
+  { id: 'holding-area', name: 'Holding area', latitude: 26.35, longitude: 80.2 },
+  { id: 'contact-box', name: 'Contact box', latitude: 24.8, longitude: 83.9 },
+  { id: 'west-asia', name: 'West Asia', latitude: 28, longitude: 45 },
+  { id: 'europe', name: 'Europe', latitude: 50, longitude: 10 },
+  { id: 'north-africa', name: 'North Africa', latitude: 28, longitude: 10 },
+  { id: 'south-africa', name: 'Southern Africa', latitude: -25, longitude: 25 },
+  { id: 'east-asia', name: 'East Asia', latitude: 35, longitude: 115 },
+  { id: 'southeast-asia', name: 'Southeast Asia', latitude: 5, longitude: 108 },
+  { id: 'pacific', name: 'Pacific', latitude: 10, longitude: 170 },
+  { id: 'north-america', name: 'North America', latitude: 40, longitude: -100 },
+  { id: 'south-america', name: 'South America', latitude: -15, longitude: -60 },
+  { id: 'australia', name: 'Australia', latitude: -25, longitude: 135 },
+  { id: 'arctic', name: 'Arctic', latitude: 75, longitude: 40 },
+]
+
 export const mapService = 'http://127.0.0.1:8080/geoserver/wms'
 
 export const osmService = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -370,6 +388,7 @@ export function sessionFor(userId) {
     canSelectGame: grant.canControlGame,
     canControlGame: grant.canControlGame,
     mapView,
+    plannedCenters,
     mapService,
     clockStart,
     exerciseTitle: exerciseMeta.exerciseTitle,

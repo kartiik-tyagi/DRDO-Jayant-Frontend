@@ -1,11 +1,28 @@
-import { Box, Typography } from '@mui/material'
+import { Box, Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { ExerciseClock } from './ExerciseClock'
 import { GameStateChip } from './GameStateChip'
 import { ScenarioContext } from './ScenarioContext'
 import { StatusBadge } from './StatusBadge'
 import { UserMenu } from './UserMenu'
 
-export function TopBar({ leading, trailing, menuOpen, onMenuOpenChange, floating = false }) {
+function ViewModes({ mode, onChange }) {
+  if (!onChange) return null
+  const choice = (id, label) => (
+    <FormControlLabel
+      control={<Checkbox size="small" checked={mode === id} onChange={() => onChange(id)} />}
+      label={label}
+      sx={{ mr: 1, '& .MuiFormControlLabel-label': { fontSize: 13 } }}
+    />
+  )
+  return (
+    <Box role="group" aria-label="Map view" sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+      {choice('default', 'Default')}
+      {choice('grid', 'Grid')}
+    </Box>
+  )
+}
+
+export function TopBar({ leading, trailing, menuOpen, onMenuOpenChange, floating = false, viewMode = 'default', onViewMode }) {
   return (
     <Box
       component="header"
@@ -25,6 +42,7 @@ export function TopBar({ leading, trailing, menuOpen, onMenuOpenChange, floating
       <Typography variant="subtitle2" sx={{ letterSpacing: '0.14em', px: 0.5, flexShrink: 0 }}>
         JAYANT
       </Typography>
+      <ViewModes mode={viewMode} onChange={onViewMode} />
       <Box sx={{ flex: 1, minWidth: 0, display: { xs: 'none', lg: 'flex' }, alignItems: 'center' }}>
         <ScenarioContext />
       </Box>

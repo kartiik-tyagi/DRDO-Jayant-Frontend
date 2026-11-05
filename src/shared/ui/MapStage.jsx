@@ -9,6 +9,22 @@ function formatCoordinate(value) {
   return Number(value).toFixed(4)
 }
 
+export function pictureLayers(session, directory) {
+  if (!session) return []
+  return session.filters.map((filter) => ({
+    ...filter,
+    opacity: directory?.opacity?.[filter.id] ?? 1,
+    visible: directory?.settings?.source === 'osm' && filter.base ? false : filter.visible,
+  }))
+}
+
+export function pictureService(session, directory) {
+  if (!session) return ''
+  return directory?.settings?.source === 'wms' && directory.settings.geoserverUrl
+    ? directory.settings.geoserverUrl
+    : session.mapService
+}
+
 export function MapStage({ readout = 'bar', onReadout }) {
   const session = useSessionStore((state) => state.session)
   const resetToken = useSessionStore((state) => state.resetToken)
@@ -31,11 +47,7 @@ export function MapStage({ readout = 'bar', onReadout }) {
     })
   }, [pointer, zoom, resolution])
   if (!session) return null
-  const layers = session.filters.map((filter) => ({
-    ...filter,
-    opacity: directory?.opacity?.[filter.id] ?? 1,
-    visible: directory?.settings?.source === 'osm' && filter.base ? false : filter.visible,
-  }))
+  const layers = pictureLayers(session, directory)
 
   const coordinates = pointer
     ? `${formatCoordinate(pointer.latitude)}° N, ${formatCoordinate(pointer.longitude)}° E`
@@ -69,7 +81,7 @@ export function MapStage({ readout = 'bar', onReadout }) {
       <Box sx={{ flex: 1, minHeight: 0, position: 'relative' }}>
         <SituationMap
           view={session.mapView}
-          serviceUrl={directory?.settings?.source === 'wms' && directory.settings.geoserverUrl ? directory.settings.geoserverUrl : session.mapService}
+          serviceUrl={pictureService(session, directory)}
           layers={layers}
           resetToken={resetToken}
           onPointer={setPointer}

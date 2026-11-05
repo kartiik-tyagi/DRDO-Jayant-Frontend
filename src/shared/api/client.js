@@ -110,6 +110,12 @@ const sessionSchema = z.object({
     minZoom: z.number(),
     maxZoom: z.number(),
   }),
+  plannedCenters: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    latitude: z.number(),
+    longitude: z.number(),
+  })).min(1),
   mapService: z.string(),
   clockStart: z.string(),
   exerciseTitle: z.string(),
